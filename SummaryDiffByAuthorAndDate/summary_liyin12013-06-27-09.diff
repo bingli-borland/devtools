@@ -1,0 +1,14 @@
+Index: tlrt-api/src/main/resources/log4j.properties
+===================================================================
+--- tlrt-api/src/main/resources/log4j.properties	(版本 277)
++++ tlrt-api/src/main/resources/log4j.properties	(版本 278)
+@@ -13,7 +13,7 @@
+ log4j.appender.FileAppender.Threshold=DEBUG
+ log4j.appender.FileAppender.layout=org.apache.log4j.PatternLayout
+ log4j.appender.FileAppender.File=log//tllm.log
+-log4j.appender.FileAppender.MaxFileSize=30MB
++log4j.appender.FileAppender.MaxFileSize=10MB
+ log4j.appender.FileAppender.MaxBackupIndex=100
+ 
+ # Layouts
+

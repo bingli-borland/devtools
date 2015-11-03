@@ -1,0 +1,1 @@
+E:\Runenv\jdk1.6.0_33\bin\xjc project-info.xsd -p com.tongtech.project

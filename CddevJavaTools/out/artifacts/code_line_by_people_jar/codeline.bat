@@ -1,0 +1,2 @@
+set CLASSPATH=
+java tongtech.tools.CodeLineByPeople auto E:/dev/DevTools/DevTools/trunk/CddevJavaTools/out.result E:/dev/DevTools/DevTools/trunk/CddevJavaTools/resources/ E:/dev/DevTools/DevTools/trunk/CddevJavaTools/temp/ C:/Python32/python

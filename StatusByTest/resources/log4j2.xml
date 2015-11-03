@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<properties>
+		<property name="servicename">cddevproj</property>
+		<property name="filename">./${servicename}.log</property>
+		<property name="patternTime">%d{dd HH:mm:ss.SSS} | %-5.5p | %-5.5t | %-20.20C:%-5.5L | %msg%n</property>
+		<property name="patternNoTime">%-5.5p | %-5.5t | %-20.20C:%-5.5L | %msg%n</property>
+	</properties>
+	<appenders>
+		<Console name="console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${patternNoTime}"/>
+		</Console>
+		<File name="file" fileName="${filename}">
+			<PatternLayout pattern="${patternTime}"/>
+		</File>
+	</appenders>
+	<loggers>
+		<root level="trace">
+			<appender-ref ref="file"/>
+			<appender-ref ref="console"/>
+		</root>
+	</loggers>
+</configuration>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_jira-rest-java-client-api" default="compile.module.jira-rest-java-client-api">
+  <dirname property="module.jira-rest-java-client-api.basedir" file="${ant.file.module_jira-rest-java-client-api}"/>
+  
+  <property name="module.jdk.home.jira-rest-java-client-api" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.jira-rest-java-client-api" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.jira-rest-java-client-api" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.jira-rest-java-client-api" value="${compiler.args}"/>
+  
+  <property name="jira-rest-java-client-api.output.dir" value="${module.jira-rest-java-client-api.basedir}/target/classes"/>
+  <property name="jira-rest-java-client-api.testoutput.dir" value="${module.jira-rest-java-client-api.basedir}/target/test-classes"/>
+  
+  <path id="jira-rest-java-client-api.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="jira-rest-java-client-api.module.production.classpath">
+    <path refid="${module.jdk.classpath.jira-rest-java-client-api}"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-api/0.13.2/atlassian-httpclient-api-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-spi/0.13.2/atlassian-httpclient-spi-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/guava/guava/10.0.1/guava-10.0.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/code/findbugs/jsr305/1.3.7/jsr305-1.3.7.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/util/concurrent/atlassian-util-concurrent/2.4.0-M9/atlassian-util-concurrent-2.4.0-M9.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-json/1.5/jersey-json-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-core/1.5/jersey-core-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.3/jaxb-impl-2.2.3.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.5.5/jackson-core-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.5.5/jackson-mapper-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.5.5/jackson-jaxrs-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-xc/1.5.5/jackson-xc-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/joda-time/joda-time/1.6/joda-time-1.6.jar"/>
+  </path>
+  
+  <path id="jira-rest-java-client-api.runtime.production.module.classpath">
+    <pathelement location="${jira-rest-java-client-api.output.dir}"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-api/0.13.2/atlassian-httpclient-api-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-spi/0.13.2/atlassian-httpclient-spi-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/guava/guava/10.0.1/guava-10.0.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/code/findbugs/jsr305/1.3.7/jsr305-1.3.7.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/util/concurrent/atlassian-util-concurrent/2.4.0-M9/atlassian-util-concurrent-2.4.0-M9.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-json/1.5/jersey-json-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-core/1.5/jersey-core-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.3/jaxb-impl-2.2.3.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.5.5/jackson-core-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.5.5/jackson-mapper-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.5.5/jackson-jaxrs-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-xc/1.5.5/jackson-xc-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/joda-time/joda-time/1.6/joda-time-1.6.jar"/>
+  </path>
+  
+  <path id="jira-rest-java-client-api.module.classpath">
+    <path refid="${module.jdk.classpath.jira-rest-java-client-api}"/>
+    <pathelement location="${jira-rest-java-client-api.output.dir}"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-api/0.13.2/atlassian-httpclient-api-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-spi/0.13.2/atlassian-httpclient-spi-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/guava/guava/10.0.1/guava-10.0.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/code/findbugs/jsr305/1.3.7/jsr305-1.3.7.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/util/concurrent/atlassian-util-concurrent/2.4.0-M9/atlassian-util-concurrent-2.4.0-M9.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-json/1.5/jersey-json-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-core/1.5/jersey-core-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.3/jaxb-impl-2.2.3.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.5.5/jackson-core-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.5.5/jackson-mapper-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.5.5/jackson-jaxrs-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-xc/1.5.5/jackson-xc-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/joda-time/joda-time/1.6/joda-time-1.6.jar"/>
+  </path>
+  
+  <path id="jira-rest-java-client-api.runtime.module.classpath">
+    <pathelement location="${jira-rest-java-client-api.testoutput.dir}"/>
+    <pathelement location="${jira-rest-java-client-api.output.dir}"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-api/0.13.2/atlassian-httpclient-api-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/httpclient/atlassian-httpclient-spi/0.13.2/atlassian-httpclient-spi-0.13.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/guava/guava/10.0.1/guava-10.0.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/google/code/findbugs/jsr305/1.3.7/jsr305-1.3.7.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/atlassian/util/concurrent/atlassian-util-concurrent/2.4.0-M9/atlassian-util-concurrent-2.4.0-M9.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-json/1.5/jersey-json-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/jersey/jersey-core/1.5/jersey-core-1.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/com/sun/xml/bind/jaxb-impl/2.2.3/jaxb-impl-2.2.3.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/javax/activation/activation/1.1/activation-1.1.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-core-asl/1.5.5/jackson-core-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-mapper-asl/1.5.5/jackson-mapper-asl-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-jaxrs/1.5.5/jackson-jaxrs-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/org/codehaus/jackson/jackson-xc/1.5.5/jackson-xc-1.5.5.jar"/>
+    <pathelement location="F:/_MY/.m2/repository/joda-time/joda-time/1.6/joda-time-1.6.jar"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.jira-rest-java-client-api">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.jira-rest-java-client-api">
+    <patternset refid="excluded.from.module.jira-rest-java-client-api"/>
+  </patternset>
+  
+  <path id="jira-rest-java-client-api.module.sourcepath">
+    <dirset dir="${module.jira-rest-java-client-api.basedir}">
+      <include name="src/main/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.jira-rest-java-client-api" depends="compile.module.jira-rest-java-client-api.production,compile.module.jira-rest-java-client-api.tests" description="Compile module jira-rest-java-client-api"/>
+  
+  <target name="compile.module.jira-rest-java-client-api.production" depends="register.custom.compilers" description="Compile module jira-rest-java-client-api; production classes">
+    <mkdir dir="${jira-rest-java-client-api.output.dir}"/>
+    <javac2 destdir="${jira-rest-java-client-api.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.jira-rest-java-client-api}/javac">
+      <compilerarg line="${compiler.args.jira-rest-java-client-api}"/>
+      <bootclasspath refid="jira-rest-java-client-api.module.bootclasspath"/>
+      <classpath refid="jira-rest-java-client-api.module.production.classpath"/>
+      <src refid="jira-rest-java-client-api.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.jira-rest-java-client-api"/>
+    </javac2>
+    
+    <copy todir="${jira-rest-java-client-api.output.dir}">
+      <fileset dir="${module.jira-rest-java-client-api.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.jira-rest-java-client-api.tests" depends="register.custom.compilers,compile.module.jira-rest-java-client-api.production" description="compile module jira-rest-java-client-api; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.jira-rest-java-client-api" description="cleanup module">
+    <delete dir="${jira-rest-java-client-api.output.dir}"/>
+    <delete dir="${jira-rest-java-client-api.testoutput.dir}"/>
+  </target>
+</project>

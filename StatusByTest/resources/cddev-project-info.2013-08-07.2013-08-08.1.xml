@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<projects>
+    <project name="BAM1"/>
+    <project name="CEP2">
+        <projectstory key="CEPB-56" status="Open" developer="linjinga" logtimespent="0" logworkcount="0" summary="作为用户,输出broker类型-,localbroker,jmsbroker,wseventbroker,agentbroker,Map消息">
+            <projectsubtask key="CEPB-87" status="Open" developer="yaolia" timespent="2" logtimespent="2" logworkcount="1" summary="jmsBroker-Text输出测试"/>
+        </projectstory>
+        <projectstory key="CEPB-26" status="Open" developer="zhaojl" logtimespent="0" logworkcount="0" summary="作为用户,其他 aggregate Function(fistever,lastever,leaving,nth,rate(number of time), Rate(timestamp))">
+            <projectsubtask key="CEPB-85" status="Open" developer="zhaojl" timespent="3" logtimespent="3" logworkcount="1" summary="aggregate Function"/>
+            <projectsubtask key="CEPB-86" status="Open" developer="zhaojl" timespent="8" logtimespent="8" logworkcount="1" summary="书写测试方案"/>
+        </projectstory>
+        <projectstory key="CEPB-22" status="Open" developer="zhaojl" logtimespent="0" logworkcount="0" summary="作为用户,Aggregate: SQL-standard function(sum, avg, count, max, min, median, stddev, avedev,fmax,fmin)">
+            <projectsubtask key="CEPB-84" status="Open" developer="zhaojl" timespent="2" logtimespent="2" logworkcount="1" summary="测试完成fmin,fmax"/>
+        </projectstory>
+    </project>
+    <project name="EDGE2">
+        <projectstory key="EDGEB-5" status="DevInpro" developer="yanyma" logtimespent="0" logworkcount="0" summary="用户可操作服务页面成功与EDGE服务建立连接">
+            <projectsubtask key="EDGEB-11" status="Open" developer="hedba" timespent="24" logtimespent="8" logworkcount="1" summary="编写后台单元测试测序"/>
+            <projectsubtask key="EDGEB-12" status="Open" developer="huangqiana" timespent="23" logtimespent="8" logworkcount="1" summary="编写前端单元测试程序"/>
+            <projectsubtask key="EDGEB-42" status="Open" developer="yanyma" timespent="27" logtimespent="0" logworkcount="0" summary="研究下一阶段前端用到技术,backbone,spring安全等"/>
+            <projectsubtask key="EDGEB-46" status="Open" developer="yanyma" timespent="11" logtimespent="0" logworkcount="0" summary="登录页面，拦截器检查用户操作是否合法，不合法返回重新登录"/>
+        </projectstory>
+    </project>
+    <project name="FSC1"/>
+    <project name="JMS20"/>
+    <project name="LLMC2">
+        <projectstory key="LLMCB-17" status="Open" developer="liurla" logtimespent="0" logworkcount="0" summary="作为技术故事，需要调通libevent-nginx之间的http/s上传和下载">
+            <projectsubtask key="LLMCB-34" status="DevInpro" developer="zhongcya" timespent="24" logtimespent="8" logworkcount="1" summary="验证一个文件能否同时被多个文件打开并读。"/>
+        </projectstory>
+    </project>
+    <project name="LLMJ2"/>
+    <project name="Proxy2">
+        <projectstory key="PROXYB-4" status="DevInpro" developer="luohqa" logtimespent="0" logworkcount="0" summary="作为tlq，需要支持AIX，linux，windows平台">
+            <projectsubtask key="PROXYB-17" status="DevReady" developer="luohqa" timespent="19" logtimespent="8" logworkcount="1" summary="Linux移植（32bit和64bit）"/>
+            <projectsubtask key="PROXYB-19" status="Open" developer="luohqa" timespent="5" logtimespent="0" logworkcount="0" summary="Win2003移植（32bit和64bit）"/>
+        </projectstory>
+        <projectstory key="PROXYB-1" status="Open" developer="yanjie" logtimespent="0" logworkcount="0" summary="作为tlq，需要支持tlsend,tlrecv转发">
+            <projectsubtask key="PROXYB-21" status="DevReady" developer="chengcca" timespent="8" logtimespent="8" logworkcount="1" summary="前端session的特征值一样"/>
+        </projectstory>
+    </project>
+    <storystats>
+        <storystat name="BAM1" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="1.0" remainstroypoint="1.0" unknownstroycount="6.0"/>
+        <storystat name="CEP2" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="40.0" remainstroypoint="107.0" unknownstroycount="8.0"/>
+        <storystat name="EDGE2" finishedstroycount="6.0" finishedstroypoint="5.5" remainstroycount="20.0" remainstroypoint="5.5" unknownstroycount="10.0"/>
+        <storystat name="FSC1" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="2.0" remainstroypoint="3.0" unknownstroycount="3.0"/>
+        <storystat name="JMS20" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="6.0" remainstroypoint="13.0" unknownstroycount="2.0"/>
+        <storystat name="LLMC2" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="2.0" remainstroypoint="4.0" unknownstroycount="22.0"/>
+        <storystat name="LLMJ2" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="1.0" remainstroypoint="2.0" unknownstroycount="12.0"/>
+        <storystat name="Proxy2" finishedstroycount="0.0" finishedstroypoint="0.0" remainstroycount="11.0" remainstroypoint="30.0" unknownstroycount="2.0"/>
+    </storystats>
+    <peoplestats>
+        <peoplestat name="caoyang" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="chengcca" timespent="8" logtimespent="8" logworkcount="1"/>
+        <peoplestat name="chengwba" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="hedba" timespent="24" logtimespent="8" logworkcount="1"/>
+        <peoplestat name="helei" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="huangqiana" timespent="23" logtimespent="8" logworkcount="1"/>
+        <peoplestat name="lanyonga" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="liurla" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="liyina" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="luohqa" timespent="5" logtimespent="8" logworkcount="1"/>
+        <peoplestat name="qinsx" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="sunleia" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="tangcheng" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="tanjiana" timespent="0" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="yanyma" timespent="11" logtimespent="0" logworkcount="0"/>
+        <peoplestat name="yaolia" timespent="2" logtimespent="2" logworkcount="1"/>
+        <peoplestat name="zhaojl" timespent="2" logtimespent="13" logworkcount="3"/>
+        <peoplestat name="zhongcya" timespent="24" logtimespent="8" logworkcount="1"/>
+        <peoplestat name="zhukanga" timespent="0" logtimespent="0" logworkcount="0"/>
+    </peoplestats>
+</projects>

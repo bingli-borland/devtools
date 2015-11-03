@@ -1,0 +1,1264 @@
+Index: api/include/rumCapi.h
+===================================================================
+--- api/include/rumCapi.h	(版本 302)
++++ api/include/rumCapi.h	(版本 303)
+@@ -1097,7 +1097,7 @@
+ 
+ RUMAPI_DLL(int) rumRPauseQueue(rumQueueR *queue_r, int *rc);
+ 
+-RUMAPI_DLL(int) rumRRestartQueue(rumQueueR *queue_r, int *rc);
++RUMAPI_DLL(int) rumRContinueQueue(rumQueueR *queue_r, int *rc);
+ 
+ RUMAPI_DLL(int) rumTSubmitMsg(const rumQueueT *queue_t, const char *msg,  int msg_len, int *rc);
+ 
+Index: api/src/rum_api.c
+===================================================================
+--- api/src/rum_api.c	(版本 302)
++++ api/src/rum_api.c	(版本 303)
+@@ -672,7 +672,7 @@
+   return 0;
+ }
+ 
+-RUMAPI_DLL(int) rumRRestartQueue(rumQueueR *queue_r, int *rc) {
++RUMAPI_DLL(int) rumRContinueQueue(rumQueueR *queue_r, int *rc) {
+   uni_recvqueue_t      *recv_queue  = NULL;
+   uni_connection_t     *su_listener = NULL;
+   uni_log_t				*log= get_log();
+
+Index: business/src/uni_message_ut.cpp
+===================================================================
+--- business/src/uni_message_ut.cpp	(版本 306)
++++ business/src/uni_message_ut.cpp	(版本 307)
+@@ -254,7 +254,7 @@
+ 	uni_instance_t		instance;
+ 	uni_connection_t	listener;
+ 
+-	strcpy(instance.recv_file_path,"");
++	strcpy(instance.recv_file_path,"./");
+ 	listener.su_instance = &instance;
+ 	recv_queue.su_listener = &listener;
+ 
+Index: business/src/uni_connection_ut.cpp
+===================================================================
+--- business/src/uni_connection_ut.cpp	(版本 306)
++++ business/src/uni_connection_ut.cpp	(版本 307)
+@@ -125,6 +125,7 @@
+     rumConnParam.on_connection_event = NULL;
+     uniConn.su_instance = &uniInst; 
+     uniConn.su_socket = NULL;
++    rumConnParam.heartbeat_interval_milli = 300;
+     uni_connection_init(&uniConn, &rumConnParam);
+ 	EXPECT_TRUE(NULL != uniConn.su_socket);
+ }
+
+Index: business/include/uni_message_codec.h
+===================================================================
+--- business/include/uni_message_codec.h	(版本 315)
++++ business/include/uni_message_codec.h	(版本 316)
+@@ -23,6 +23,7 @@
+   int                     patch_num;     /*分片数*/
+   char                   *data;
+   int                     data_len;     /*分片数据大小*/
++  int                     encoded_len;  /*编码后数据长度*/
+   apr_uint64_t            size;         /*文件、大消息总大小*/
+   double                  time_submit;  /*用户发送消息的时间戳*/
+ } uni_msg_params_t;
+Index: business/src/uni_message.c
+===================================================================
+--- business/src/uni_message.c	(版本 315)
++++ business/src/uni_message.c	(版本 316)
+@@ -13,9 +13,9 @@
+ 
+   su_instance = send_queue->su_connection->su_instance;
+   apr_atomic_inc64(&su_instance->msgs_sent);
+-  apr_atomic_add64(&su_instance->bytes_sent, uni_msg_params->data_len);
++  apr_atomic_add64(&su_instance->bytes_sent, uni_msg_params->encoded_len);
+   apr_atomic_inc64(&send_queue->messages_sent);
+-  apr_atomic_add64(&send_queue->bytes_sent, uni_msg_params->data_len);
++  apr_atomic_add64(&send_queue->bytes_sent, uni_msg_params->encoded_len);
+ 
+   return 0;
+ }
+@@ -126,7 +126,7 @@
+ 	uni_log_t				*log = get_log();
+ 
+ 	if(pRecvNode->size != pRecvNode->offset) {
+-		UNI_LOG_DEBUG(log,"received a invalid file message![%s|%d|%d]", pRecvNode->name, pRecvNode->size, pRecvNode->offset);
++		UNI_LOG_DEBUG(log,"received a invalid file message![%s|%"APR_UINT64_T_FMT"|%"APR_UINT64_T_FMT"]", pRecvNode->name, pRecvNode->size, pRecvNode->offset);
+ 		rc = apr_file_remove(pRecvNode->name,pRecvNode->pool);
+ 		if(rc != 0)
+ 			UNI_LOG_WARN(log,"remove file [%s] failed",pRecvNode->name);
+@@ -383,9 +383,11 @@
+       encoded_params.type     = type;
+       encoded_len = uni_message_encoded(send_queue, msg_params, &encoded_params, &encoded_data);
+       if (encoded_len<=0) {
+-        nRet =  RUM_ERR_MSG_SEND_ERROR;
++        nRet =  RUM_ERR_ENCODE;
+         break;
+       }
++      encoded_params.encoded_len = encoded_len;
++
+       /*发送数据*/
+       rc = uni_message_burst_send(send_queue, encoded_data,encoded_len,su_socket, &encoded_params);
+       if (rc!=0) {
+@@ -465,6 +467,7 @@
+ 		  apr_pool_destroy(encoded_pool);
+ 		  return RUM_ERR_ENCODE;
+ 		}
++    encoded_params.encoded_len = encoded_len;
+ 
+ 		/*发送数据*/
+ 		rc = uni_message_burst_send(send_queue, encoded_data,encoded_len,su_socket, &encoded_params);
+@@ -511,9 +514,10 @@
+   	encoded_len = uni_message_encoded(send_queue, msg_params, &encoded_params, &encoded_msg);
+   	if (encoded_len<0) {
+   		UNI_LOG_ERROR(log,"%s","message encoded error");
+-  		nRet = -2;
++  		nRet = RUM_ERR_ENCODE;
+       break;
+   	}
++    encoded_params.encoded_len = encoded_len;
+ 
+     rc = uni_message_burst_send(send_queue, encoded_msg, encoded_len, su_socket, &encoded_params);
+   	if (rc != 0) {
+Index: examples/c/tu/sthread_sinstance_sconn_squeue_send.c
+===================================================================
+--- examples/c/tu/sthread_sinstance_sconn_squeue_send.c	(版本 315)
++++ examples/c/tu/sthread_sinstance_sconn_squeue_send.c	(版本 316)
+@@ -54,7 +54,9 @@
+   int							msgnum  = 1;			// Number of messages to send...
+   char							*filename=NULL;
+   int							heartbeat_interval_milli = 3;
+-  rumConnectionStats			report;
++  rumConnectionStats			conn_report;
++  rumTStreamStats					send_report;
++  rumStats                report;
+   rumTxLatencyInfo				recv_latency;
+ 
+   for (i = 1; i < argc; i++) 
+@@ -209,7 +211,7 @@
+   }
+   free(message.msg_buf);
+ 
+-  rumConnectionStatistics(&connection,&send_queue,&report,NULL);
++  rumConnectionStatistics(&connection,&send_queue,&conn_report,NULL);
+ 
+    /* Sleep in main thread until the users terminates the program by typing 's and <enter>' */
+   printf("*** Press '9 + <enter>' to terminate the program.\n");
+@@ -234,6 +236,32 @@
+   printf("\tmax:	%lf\n",recv_latency.hist_zqueue->max);
+   printf("\tmin:	%lf\n",recv_latency.hist_zqueue->min);
+ 
++	rumTGetQueueStatistics(&send_queue, &send_report, NULL);
++	printf("send queue statistics monitort information\n");
++	printf("\ttotal_bytes_sent:	%lld\n",send_report.total_bytes_sent);
++	printf("\ttotal_messages_sent:	%lld\n",send_report.total_messages_sent);
++	printf("\tmessages_sent:	%lld\n",send_report.messages_sent);
++	printf("\tbytes_sent:	%lld\n",send_report.bytes_sent);
++	printf("\tmsg_sqn:	%lld\n",send_report.msg_sqn);
++	printf("\ttimestamp:	%lld\n",send_report.timestamp);
++
++	//instance statistics information
++	rumGetStatistics(&instance, &report, 0,0,NULL);
++	printf("instance statistics information\n");
++	printf("\tmsgs_sent :	%lld\n",report.msgs_sent);
++	printf("\tmsgs_received:	%lld\n",report.msgs_received);
++	printf("\tbytes_sent :	%lld\n",report.bytes_sent);
++	printf("\tbytes_received:	%lld\n",report.bytes_received);
++	printf("\tserver_port:	%d\n",report.server_port);
++	printf("\ttotal_msgs_sent:	%lld\n",report.total_msgs_sent);
++	printf("\ttotal_msgs_received:	%lld\n",report.total_msgs_received);
++	printf("\ttotal_bytes_sent:	%lld\n",report.total_bytes_sent);
++	printf("\ttotal_bytes_received:	%lld\n",report.total_bytes_received);
++	printf("\tnum_conn_recorded:	%d\n",report.num_conn_recorded);
++	printf("\trate_kbps_tx:	%d\n",report.rate_kbps_tx);
++	printf("\trate_kbps_rx:	%d\n",report.rate_kbps_rx);
++	printf("\ttimestamp:	%lld\n",report.timestamp);
++
+   if(rumTCloseQueue (&send_queue, NULL, NULL)!=RUM_SUCCESS)
+   {
+     exit(-1);
+Index: examples/c/tu/sthread_sinstance_mqueue_receive.c
+===================================================================
+--- examples/c/tu/sthread_sinstance_mqueue_receive.c	(版本 315)
++++ examples/c/tu/sthread_sinstance_mqueue_receive.c	(版本 316)
+@@ -16,8 +16,8 @@
+ 	static int msgCount = 0;
+ 
+ 	msgCount++;
+-	printf("*** Msg Rcvd: \nmsgcount-[%d] data-[%s] msglen-[%d]",msgCount, msg->msg_buf, msg->msg_len);
+-	printf(" queue-[%s]\n",msg->stream_info->queue_name);
++	/*printf("*** Msg Rcvd: \nmsgcount-[%d] data-[%s] msglen-[%d]",msgCount, msg->msg_buf, msg->msg_len);
++	printf(" queue-[%s]\n",msg->stream_info->queue_name);*/
+ }
+ 
+ static void Help()
+@@ -41,6 +41,9 @@
+ 	rumRxQueueParameters		qParams[MAX_QUEUE_NUM];
+ 	rumQueueR					recv_queue[MAX_QUEUE_NUM];
+ 	rumConnectionListenerParams listenerparams;
++  rumRxLatencyInfo				recv_latency;
++  rumRQueueStats					recv_report;
++  rumStats						    report;
+ 
+ 	for (i = 1; i < argc; i++)
+ 	{
+@@ -67,6 +70,9 @@
+ 		exit(-1);
+ 	}
+ 	config.ServerSocketPort = port; // listener port...
++	strcpy(config.log_configure,"log_file.conf");
++	strcpy(config.log_category,"my_cat");
++	strcpy(config.recv_file_path,"tmp");	
+ 	//initialize the transmitter using the configuration object
+ 	if(rumInit(&instance, &config, NULL, NULL, NULL)!=RUM_SUCCESS)
+ 	{
+@@ -103,8 +109,61 @@
+     while (getc(stdin) != '9' ) {
+     	sleep(1);
+     }
++	 	recv_latency.hist_business =(rumHistogram  *)malloc(sizeof(rumHistogram));
++	 	recv_latency.hist_zqueue = (rumHistogram  *)malloc(sizeof(rumHistogram));
++	 	recv_latency.hist_on_msg = (rumHistogram  *)malloc(sizeof(rumHistogram));
++
++  rumGetStatistics(&instance, &report, 0,0,NULL);
++  printf("instance statistics information\n");
++  printf("\tmsgs_sent            : %lld\n",report.msgs_sent);
++  printf("\tmsgs_received        : %lld\n",report.msgs_received);
++  printf("\tbytes_sent           : %lld\n",report.bytes_sent);
++  printf("\tbytes_received       : %lld\n",report.bytes_received);
++  printf("\tserver_port          : %d\n",report.server_port);
++  printf("\ttotal_msgs_sent      : %lld\n",report.total_msgs_sent);
++  printf("\ttotal_msgs_received  : %lld\n",report.total_msgs_received);
++  printf("\ttotal_bytes_sent     : %lld\n",report.total_bytes_sent);
++  printf("\ttotal_bytes_received : %lld\n",report.total_bytes_received);
++  printf("\tnum_conn_recorded    : %d\n",report.num_conn_recorded);
++  printf("\trate_kbps_tx         : %d\n",report.rate_kbps_tx);
++  printf("\trate_kbps_rx         : %d\n",report.rate_kbps_rx);
++  printf("\ttimestamp            : %lld\n",report.timestamp);
++
+ 	for (j = 0; j < qnum; j++)
+ 	{
++		rumRGetLatencyInfo(&recv_queue[j], &recv_latency, NULL);
++		printf("queue[%d] recv latency information\n", j);
++		printf("recv latency business:\n");
++	 	printf("\tduration : %lf\n",recv_latency.hist_business->duration);
++	 	printf("\taverage  : %lf\n",recv_latency.hist_business->average);
++	 	printf("\tmax      : %lf\n",recv_latency.hist_business->max);
++	 	printf("\tmin      : %lf\n",recv_latency.hist_business->min);
++	 	printf("recv latency zqueue:\n");
++	 	printf("\tduration : %lf\n",recv_latency.hist_zqueue->duration);
++	 	printf("\taverage  : %lf\n",recv_latency.hist_zqueue->average);
++	 	printf("\tmax      : %lf\n",recv_latency.hist_zqueue->max);
++	 	printf("\tmin      : %lf\n",recv_latency.hist_zqueue->min);
++		printf("recv latency msg:\n");
++		printf("\tduration : %lf\n",recv_latency.hist_on_msg->duration);
++		printf("\taverage  : %lf\n",recv_latency.hist_on_msg->average);
++		printf("\tmax      : %lf\n",recv_latency.hist_on_msg->max);
++		printf("\tmin      : %lf\n",recv_latency.hist_on_msg->min);
++
++		rumRGetQueueStatistics(&recv_queue[j], &recv_report, NULL);
++		printf("recv queue statistics monitort information\n");
++		printf("\tmessages_received : %lld\n",recv_report.messages_received);
++    printf("\tbytes_received    : %lld\n",recv_report.bytes_received);
++		printf("\ttimestamp         : %lld\n",recv_report.timestamp);
++		printf("\tstream nums[%d]\n", recv_report.num_streams);
++		for(i=0; i<recv_report.num_streams; i++) {
++			char sz_ctime[64];
++			printf("\tstream[%d]\n", i);
++			printf("\t\ttimestamp           : %llu\n", (recv_report.stream_stats+i)->timestamp);
++			printf("\t\tstream_id           : %llu\n", (recv_report.stream_stats+i)->stream_id);
++			printf("\t\tmessages_received   : %llu\n", (recv_report.stream_stats+i)->messages_received);
++			printf("\t\tmsgs_bytes_received : %llu\n", (recv_report.stream_stats+i)->msgs_bytes_received);
++		}
++
+ 		if(rumRCloseQueue (&recv_queue[j], NULL)!=RUM_SUCCESS)
+ 		{
+ 			exit(-1);
+Index: examples/c/tu/sthread_sinstance_sconn_statistics_latency.c
+===================================================================
+--- examples/c/tu/sthread_sinstance_sconn_statistics_latency.c	(版本 315)
++++ examples/c/tu/sthread_sinstance_sconn_statistics_latency.c	(版本 316)
+@@ -39,7 +39,7 @@
+ int  tllm_st_si_sc_sq_monitor(int argc, char** argv) {
+ 	int								i=0;
+ 	int								destPort  = 3367;		// listener port
+-	char							queue_name[32] = "queue1";
++	char							queue_name[32] = "queue0";
+ 	char							remoteIp[16]  = "127.0.0.1";
+ 	rumConfig						config;
+ 	rumInstance						instance;
+@@ -111,7 +111,9 @@
+ 		exit(-1);
+ 	}
+ 	config.ServerSocketPort=destPort;
+-	config.patch_size = 1024;
++	config.patch_size = 4096;
++  strcpy(config.log_configure,"log_file.conf");
++  strcpy(config.log_category,"my_cat");
+ 
+ 	//initialize the transmitter using the configuration object
+ 	if(rumInit(&instance, &config, NULL, NULL, NULL)!=RUM_SUCCESS) {
+@@ -221,10 +223,12 @@
+ 		memset(filemsg.msg_buf,0,FILE_NAME_LEN);
+ 		memcpy(filemsg.msg_buf,filename,strlen(filename));
+ 		printf ("*** Sending file messages: %s\n", filename);
+-		if(rumTSubmitMessage(&send_queue, &filemsg, NULL)!=RUM_SUCCESS)
+-		{
+-			printf("*** Failed to submit filemsg\n");
+-		}
++    for (i = 0; i < msgnum; i++) {
++  		if(rumTSubmitMessage(&send_queue, &filemsg, NULL)!=RUM_SUCCESS)
++  		{
++  			printf("*** Failed to submit filemsg\n");
++  		}
++    }
+ 		free(filemsg.msg_buf);
+ 		free(filename);
+ 	}
+Index: examples/c/tu/sthread_sinstance_squeue_receive.c
+===================================================================
+--- examples/c/tu/sthread_sinstance_squeue_receive.c	(版本 315)
++++ examples/c/tu/sthread_sinstance_squeue_receive.c	(版本 316)
+@@ -17,7 +17,7 @@
+ 	static int msgCount = 0;
+ 	FILE *file=NULL;
+ 
+-	msgCount++;
++	/*msgCount++;
+ 	printf("*** Msg Rcvd: \nmsgcount-[%d] data-[%s] msglen-[%d]",msgCount, msg->msg_buf, msg->msg_len);
+ 	printf(" queue-[%s]\n",msg->stream_info->queue_name);
+ 
+@@ -26,7 +26,7 @@
+ 		file = fopen("demo_recv.txt","wb");
+ 		fwrite(&msgCount,4,1,file);
+ 		fclose(file);
+-	}
++	}*/
+ }
+ 
+ static void Help()
+@@ -143,7 +143,7 @@
+ 		printf("\tmin      : %lf\n",recv_latency.hist_on_msg->min);
+ 		//recv queue statistics information
+ 		rumRGetQueueStatistics(&recv_queue, &recv_report, NULL);
+-		printf("send queue statistics monitort information\n");
++		printf("recv queue statistics monitort information\n");
+ 		printf("\tmessages_received : %lld\n",recv_report.messages_received);
+     printf("\tbytes_received    : %lld\n",recv_report.bytes_received);
+ 		printf("\ttimestamp         : %lld\n",recv_report.timestamp);
+
+Index: cmq/include/zloop.h
+===================================================================
+--- cmq/include/zloop.h	(版本 320)
++++ cmq/include/zloop.h	(版本 321)
+@@ -82,6 +82,9 @@
+ CZMQ_EXPORT(int)
+     zloop_start (zloop_t *self);
+ 
++CZMQ_EXPORT(int)
++    zloop_stop (zloop_t *self);
++
+ //  Self test of this class
+ int
+     zloop_test (BOOLEAN verbose);
+Index: cmq/src/zloop.c
+===================================================================
+--- cmq/src/zloop.c	(版本 320)
++++ cmq/src/zloop.c	(版本 321)
+@@ -36,6 +36,9 @@
+ 
+ #include "../include/czmq.h"
+ 
++#define CZMQ_LOOP_INIT        0x00
++#define CZMQ_LOOP_END         0x10
++
+ typedef struct _s_poller_t s_poller_t;
+ typedef struct _s_timer_t s_timer_t;
+ 
+@@ -49,6 +52,7 @@
+     s_poller_t *pollact;        //  Pollers for this poll set
+     BOOLEAN dirty;                 //  True if pollset needs rebuilding
+     BOOLEAN verbose;               //  True if verbose tracing wanted
++    BOOLEAN status;                 //  True if loop needs to end
+     zlist_t *zombies;           //  List of timers to kill
+ };
+ 
+@@ -168,6 +172,7 @@
+         self->pollers = zlist_new ();
+         self->timers  = zlist_new ();
+         self->zombies = zlist_new ();
++        self->status  = CZMQ_LOOP_INIT;
+         if (!self->pollers
+         ||  !self->timers
+         ||  !self->zombies) {
+@@ -347,7 +352,7 @@
+         timer = (s_timer_t *) zlist_next (self->timers);
+     }
+     //  Main reactor loop
+-    while (!zctx_interrupted) {
++    while (!zctx_interrupted && (CZMQ_LOOP_END != self->status)) {
+         if (self->dirty) {
+             // If s_rebuild_pollset() fails, break out of the loop and
+             // return its error
+@@ -436,7 +441,14 @@
+     return rc;
+ }
+ 
++int
++zloop_stop (zloop_t *self)
++{
++  self->status = CZMQ_LOOP_END;
+ 
++  return 0;
++}
++
+ //  --------------------------------------------------------------------------
+ //  Selftest
+ 
+Index: business/src/uni_instance.c
+===================================================================
+--- business/src/uni_instance.c	(版本 320)
++++ business/src/uni_instance.c	(版本 321)
+@@ -346,6 +346,7 @@
+ 
+  		apr_thread_mutex_lock(ins->loop_mutex);
+  		uni_del_eventsocket_loop(ins->loop,ins->recv_socket);
++    zloop_stop(ins->loop);
+  		apr_thread_mutex_unlock(ins->loop_mutex);
+ 		uni_inproc_socket_send(ins);
+ 		uni_inproc_socket_close(ins);
+
+Index: business/src/uni_instance.c
+===================================================================
+--- business/src/uni_instance.c	(版本 322)
++++ business/src/uni_instance.c	(版本 323)
+@@ -258,6 +258,7 @@
+   {
+ 	  //销毁日志
+ 	  LOG_DESTROY(get_log());
++    apr_pool_destroy(g_process.pool);
+ 	  apr_terminate();
+   }
+   return APR_SUCCESS;
+
+Index: business/include/uni_connection.h
+===================================================================
+--- business/include/uni_connection.h	(版本 323)
++++ business/include/uni_connection.h	(版本 324)
+@@ -25,9 +25,11 @@
+ 
+ #define CONNECTIONID_LEN	80
+ 
+-#define RUM_LISTENER_STOP           0x01
+-#define RUM_LISTENER_END            0x02
+-#define RUM_LISTENER_SND_CMD        0x04
++#define UNI_LISTENER_STOP           0x01
++#define UNI_LISTENER_END            0x02
++#define UNI_LISTENER_SND_CMD        0x04
++#define UNI_FLAG_LISTENER           0x08
++#define UNI_FLAG_CONNECTION         0x10
+ 
+ #define UNI_LATENCY_BUSINESS        0x01
+ #define UNI_LATENCY_ZQUEUE          0x02
+Index: business/include/uni_queue.h
+===================================================================
+--- business/include/uni_queue.h	(版本 323)
++++ business/include/uni_queue.h	(版本 324)
+@@ -107,7 +107,7 @@
+ RUMAPI_DLL(apr_status_t) uni_sendqueue_close(uni_sendqueue_t *q);
+ RUMAPI_DLL(apr_status_t) uni_recvqueue_close(uni_recvqueue_t *r);
+ RUMAPI_DLL(apr_status_t) uni_sendqueue_pause(uni_connection_t *c, char *queue_name);
+-RUMAPI_DLL(apr_status_t) uni_sendqueue_restart(uni_connection_t *c, char *queue_name);
++RUMAPI_DLL(apr_status_t) uni_sendqueue_continue(uni_connection_t *c, char *queue_name);
+ RUMAPI_DLL(int) uni_sendqueue_getid (uni_sendqueue_t *sendqueue);
+ RUMAPI_DLL(int) uni_recvqueue_getid(uni_recvqueue_t *recvqueue);
+ //RUMAPI_DLL(apr_status_t uni_recvqueue_setparams(uni_sendqueue_t *sq, const rumTxQueueParameters *queue_params);
+Index: business/src/uni_queue.c
+===================================================================
+--- business/src/uni_queue.c	(版本 323)
++++ business/src/uni_queue.c	(版本 324)
+@@ -143,22 +143,28 @@
+   return APR_SUCCESS;
+ }
+ 
+-apr_status_t uni_sendqueue_restart(uni_connection_t *c, char *queue_name) {
++apr_status_t uni_sendqueue_continue(uni_connection_t *c, char *queue_name) {
+ 	uni_sendqueue_t        *uni_queue		= NULL;
+ 	int                     nQueueNum		= 0;
+ 	int                     i				= 0;
+ 	uni_log_t				*log			= get_log();
+   
+-  /*设置暂停发送标志*/
++  /*清除暂停发送标志*/
+   nQueueNum = get_resource_control(UNI_CONTROL_QUEUEPERCON);
+   apr_thread_mutex_lock(c->queue_mutex);
+   for(i=0; i<nQueueNum; i++) {
+     if(NULL != *(c->queue+i)) {
+       uni_queue = get_process_record()->uni_sendqueue[((rumQueueT *)*(c->queue+i))->handle];
+-      if(!apr_strnatcmp(uni_queue->name, queue_name)) {
++      /*队列名为空时则清除连接上所有队列暂停标志*/
++      if(NULL == queue_name) {
+         uni_queue->status = UNI_QUEUE_STATUS_NORMAL;
+-       UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Restart sending message!", c->connectid, queue_name);
+-        break;
++        UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Restart sending message!", c->connectid, uni_queue->name);
++      }else {
++        if(!apr_strnatcmp(uni_queue->name, queue_name)) {
++          uni_queue->status = UNI_QUEUE_STATUS_NORMAL;
++          UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Restart sending message!", c->connectid, queue_name);
++          break;
++        }
+       }
+     }
+   }
+Index: business/src/uni_connection.c
+===================================================================
+--- business/src/uni_connection.c	(版本 323)
++++ business/src/uni_connection.c	(版本 324)
+@@ -119,38 +119,36 @@
+                  sizeof(recv_stream->stream_id),
+                  recv_stream);
+     apr_thread_mutex_unlock(recv_queue->stream_mutex);
+-   UNI_LOG_DEBUG(log,"Create a new stream info[%llu] conn [%s]!", rumMsg->stream_info->stream_id, recv_conn->conn_identify_str);
++    UNI_LOG_DEBUG(log,"Create a new stream info[%llu] conn [%s]!", rumMsg->stream_info->stream_id, recv_conn->conn_identify_str);
+   }
+   recv_stream->msgs_received++;
+   recv_stream->bytes_received += len;
+ 
+   /*检查是否需要回传暂停指令*/
+   if(UNI_QUEUE_STATUS_PAUSE == recv_queue->status) {
+-    if(UNI_QUEUE_STATUS_NORMAL == recv_stream->status) {
+-      /*发送暂停指令*/
+-      int rc = 0;
+-      zframe_t *frame_identify = zframe_new(conn_identify, conn_identify_len);
+-      rc = zframe_send(&frame_identify, su_listener->su_socket, ZFRAME_MORE|ZFRAME_DONTWAIT);
++    /*发送暂停指令*/
++    int rc = 0;
++    zframe_t *frame_identify = zframe_new(conn_identify, conn_identify_len);
++    rc = zframe_send(&frame_identify, su_listener->su_socket, ZFRAME_MORE|ZFRAME_DONTWAIT);
++    if(0 != rc) {
++      zframe_destroy (&frame_identify);
++      UNI_LOG_WARN(log,"%s","Send identify of pause command failed!");
++    }else {
++      char      command_pause[RUM_MAX_QUEUE_NAME+1];
++      zframe_t *frame_command = NULL;
++
++      command_pause[0] = UNI_QUEUE_STATUS_PAUSE;
++      apr_cpystrn(command_pause+1, recv_queue->queue_name, RUM_MAX_QUEUE_NAME);
++      frame_command = zframe_new(command_pause, strlen(recv_queue->queue_name) + 2);
++      zframe_flags_set(frame_command, UNI_MSG_TYPE_CONTROL);
++      UNI_LOG_DEBUG(log,"%s","Start to send a pause command!");
++      rc = zframe_send(&frame_command, su_listener->su_socket, 0);
+       if(0 != rc) {
+-        zframe_destroy (&frame_identify);
+-        UNI_LOG_WARN(log,"%s","Send identify of pause command failed!");
++        zframe_destroy (&frame_command);
++        UNI_LOG_WARN(log,"%s","Failed to send a pause command!");
+       }else {
+-        char      command_pause[RUM_MAX_QUEUE_NAME+1];
+-        zframe_t *frame_command = NULL;
+-
+-        command_pause[0] = UNI_QUEUE_STATUS_PAUSE;
+-        apr_cpystrn(command_pause+1, recv_queue->queue_name, RUM_MAX_QUEUE_NAME);
+-        frame_command = zframe_new(command_pause, strlen(recv_queue->queue_name) + 2);
+-        zframe_flags_set(frame_command, UNI_MSG_TYPE_CONTROL);
+-        UNI_LOG_DEBUG(log,"%s","Start to send a pause command!");
+-        rc = zframe_send(&frame_command, su_listener->su_socket, 0);
+-        if(0 != rc) {
+-           zframe_destroy (&frame_command);
+-           UNI_LOG_WARN(log,"%s","Failed to send a pause command!");
+-        }else {
+-			recv_stream->status = UNI_QUEUE_STATUS_PAUSE;
+-            UNI_LOG_DEBUG(log,"%s","Success to send a pause command!");
+-        }
++        recv_stream->status = UNI_QUEUE_STATUS_PAUSE;
++        UNI_LOG_DEBUG(log,"%s","Success to send a pause command!");
+       }
+     }
+   }
+@@ -274,6 +272,7 @@
+   if (port==0)
+ 	  return ;
+   sprintf(bindto, "tcp://*:%d", port);
++  su_listener->flag |= UNI_FLAG_LISTENER;
+   su_listener->su_socket = zsocket_new(uni_instance_get_ctx(su_instance), ZMQ_ROUTER);
+ 
+   /*注册监听事件*/
+@@ -329,10 +328,10 @@
+   }
+   zsocket_set_rcvtimeo(su_listener->su_socket, 500);
+   last_clean_time = apr_time_now();
+-  while(!(su_listener->flag & RUM_LISTENER_STOP)) {
++  while(!(su_listener->flag & UNI_LISTENER_STOP)) {
+     /*发送恢复指令*/
+-    if(su_listener->flag & RUM_LISTENER_SND_CMD) {
+-      su_listener->flag &=  ~RUM_LISTENER_SND_CMD;
++    if(su_listener->flag & UNI_LISTENER_SND_CMD) {
++      su_listener->flag &=  ~UNI_LISTENER_SND_CMD;
+       uni_listener_snd_restart(su_instance);
+     }
+ 
+@@ -416,7 +415,7 @@
+     if(!bUserAllocFlag)
+       apr_pool_clear(pPool);
+   }
+-  su_listener->flag |= RUM_LISTENER_END;
++  su_listener->flag |= UNI_LISTENER_END;
+   if(!bUserAllocFlag)
+     apr_pool_destroy(pPool);
+   return NULL;
+@@ -434,9 +433,9 @@
+ 	  uni_inproc_socket_send(ins);
+ 	  uni_connection_close(listener->event_addr,listener->event_socket,ins->ctx);
+ 
+-    listener->flag |= RUM_LISTENER_STOP;
++    listener->flag |= UNI_LISTENER_STOP;
+     
+-    while(!(listener->flag & RUM_LISTENER_END))
++    while(!(listener->flag & UNI_LISTENER_END))
+       apr_sleep(APR_USEC_PER_SEC/10);
+ 
+     zsocket_destroy(ins->ctx, listener->su_socket);
+@@ -483,6 +482,7 @@
+ 	  UNI_LOG_ERROR(log,"%s","isntance of connection NULL");
+ 	  return RUM_ERR_NULL_INSTANCE;
+   }
++  su_connection->flag |= UNI_FLAG_CONNECTION;
+   su_connection->timestamp = apr_time_now();
+   memcpy(&(connection_event.connection_info),connect_params->on_connection_user,sizeof(rumConnection));
+   connection_event.connection_info.connection_id = (rumConnectionID_t)su_connection;
+@@ -652,6 +652,8 @@
+           strcpy(event_ret.rsrv, event_rcv.data.connected.addr);
+           connection->on_event(&event_ret, NULL);
+         }
++        /*新连接清除队列暂停标志，解决对端重启暂停恢复异常*/
++        uni_sendqueue_continue(connection, NULL);
+         break;
+ 
+       case ZMQ_EVENT_ACCEPTED:     /*连接到达*/
+@@ -680,7 +682,7 @@
+         }
+         /*队列恢复*/
+         else if(UNI_CTL_TYPE_QUEUE_RESTART == cmd[0]) {
+-          uni_sendqueue_restart(connection, cmd+1);
++          uni_sendqueue_continue(connection, cmd+1);
+         }
+         if(connection->on_event) {
+           event_ret.type  = RUM_CONNECTION_CONTROL;
+Index: business/src/uni_connection_ut.cpp
+===================================================================
+--- business/src/uni_connection_ut.cpp	(版本 323)
++++ business/src/uni_connection_ut.cpp	(版本 324)
+@@ -68,9 +68,9 @@
+     uniInst.su_listener = &uniConn;
+     uniInst.ctx = zctx_new();
+     uniConn.su_socket = zsocket_new(uniInst.ctx, ZMQ_PUSH);
+-    uniConn.flag = RUM_LISTENER_STOP;
++    uniConn.flag = UNI_LISTENER_STOP;
+     uni_listener_work(pThread, (void *)&uniInst);
+-	EXPECT_TRUE(uniConn.flag & RUM_LISTENER_END);
++	EXPECT_TRUE(uniConn.flag & UNI_LISTENER_END);
+ }
+ 
+ static void on_connection_event(const rumConnectionEvent* con_event, void* eventData) {
+@@ -89,14 +89,14 @@
+ 	uniInst.send_socket = zsocket_new(g_pRet_uni_instance_get_ctx, ZMQ_PAIR);
+ 
+     uniInst.su_listener = &uniConn;
+-    uniConn.flag = RUM_LISTENER_END;
++    uniConn.flag = UNI_LISTENER_END;
+ 	uniConn.on_event = (rum_on_connection_event_t)on_connection_event;
+     uniConn.su_socket = zsocket_new(uniInst.ctx, ZMQ_PUSH);
+ 	uniConn.event_socket = zsocket_new(uniInst.ctx, ZMQ_PAIR);
+ 	strcpy(uniConn.event_addr, "tmp");
+     apr_pool_create(&uniConn.conn_pool, NULL);
+     uni_listener_stop(&uniInst);
+-    EXPECT_TRUE(uniConn.flag & RUM_LISTENER_STOP);
++    EXPECT_TRUE(uniConn.flag & UNI_LISTENER_STOP);
+     EXPECT_TRUE(NULL == uniInst.su_listener);
+ }
+ 
+Index: api/src/rum_api.c
+===================================================================
+--- api/src/rum_api.c	(版本 323)
++++ api/src/rum_api.c	(版本 324)
+@@ -735,7 +735,7 @@
+ 	  UNI_LOG_ERROR(log,"get listener from recv queue null. queue_r handle[%d]", queue_r->handle);
+ 	  return  RUM_ERR_QUEUE_CONN;
+   }
+-  su_listener->flag |= RUM_LISTENER_SND_CMD;
++  su_listener->flag |= UNI_LISTENER_SND_CMD;
+   UNI_LOG_DEBUG(log,"%s","restart recv queue");
+   return 0;
+ }
+
+Index: mq/src/clock.cpp
+===================================================================
+--- mq/src/clock.cpp	(版本 326)
++++ mq/src/clock.cpp	(版本 327)
+@@ -68,28 +68,7 @@
+     time_us /= 10;
+     time_us -= 11644473600000000i64;
+     return time_us;
+-
+-#elif defined HAVE_CLOCK_GETTIME && defined CLOCK_MONOTONIC
+-
+-    //  Use POSIX clock_gettime function to get precise monotonic time.
+-    struct timespec tv;
+-    int rc = clock_gettime (CLOCK_MONOTONIC, &tv);
+-		// Fix case where system has clock_gettime but CLOCK_MONOTONIC is not supported.
+-		// This should be a configuration check, but I looked into it and writing an 
+-		// AC_FUNC_CLOCK_MONOTONIC seems beyond my powers.
+-		if( rc != 0) {
+-			//  Use POSIX gettimeofday function to get precise time.
+-			struct timeval tv;
+-			int rc = gettimeofday (&tv, NULL);
+-			errno_assert (rc == 0);
+-			return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+-		}
+-    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_nsec / 1000);
+-
+-#elif defined HAVE_GETHRTIME
+-
+-    return (gethrtime () / 1000);
+-
++    
+ #else
+ 
+     //  Use POSIX gettimeofday function to get precise time.
+
+Index: api/src/rum_api_ut.cpp
+===================================================================
+--- api/src/rum_api_ut.cpp	(版本 330)
++++ api/src/rum_api_ut.cpp	(版本 331)
+@@ -297,6 +297,7 @@
+     char                        msg[50];
+ 	char						socket[20];
+ 
++    memset(&uniQueueT, 0, sizeof(uniQueueT));
+     process.uni_sendqueue[0] = &uniQueueT;
+     apr_pool_create(&uniConn.conn_pool, g_Pool);
+ 	uniInstance.patch_size = 1024;
+@@ -308,7 +309,7 @@
+     QueueT.flag = RUM_FLAG_QUEUE_DEL;
+ 	g_nRet_mock_uni_message_send=0;
+ 	g_pRet_mock_uni_txsocket_from_connection = socket;
+-    EXPECT_EQ(-1, rumTSubmitMsg(&QueueT, NULL, 0, NULL));
++    EXPECT_EQ(-12, rumTSubmitMsg(&QueueT, NULL, 0, NULL));
+ 	
+ 	QueueT.tag=mock_uni_check_tag();
+     QueueT.flag = 0;
+@@ -339,6 +340,7 @@
+     char                        msg[50];
+     rumTxMessage                rumMsg;
+ 
++    memset(&uniQueueT, 0, sizeof(uniQueueT));
+     process.uni_sendqueue[0] = &uniQueueT;
+     apr_pool_create(&uniConn.conn_pool, g_Pool);
+ 	uniInstance.patch_size = 1024;
+
+Index: cmq/src/zmsg.c
+===================================================================
+--- cmq/src/zmsg.c	(版本 332)
++++ cmq/src/zmsg.c	(版本 333)
+@@ -145,7 +145,7 @@
+                 break;
+             frame = (zframe_t *) zlist_pop (self->frames);
+         }
+-        //zmsg_destroy (self_p);
++        zmsg_destroy (self_p);
+     }
+     return rc;
+ }
+Index: cmq/src/zframe.c
+===================================================================
+--- cmq/src/zframe.c	(版本 332)
++++ cmq/src/zframe.c	(版本 333)
+@@ -196,7 +196,7 @@
+             zmq_msg_timestamp_set(&self->zmsg, self->timestamp);
+             if (zmq_sendmsg (zocket, &self->zmsg, snd_flags) == -1)
+                 return -1;
+-            //zframe_destroy (self_p);
++            zframe_destroy (self_p);
+         }
+     }
+     return 0;
+
+Index: api/src/rum_api_ut.cpp
+===================================================================
+--- api/src/rum_api_ut.cpp	(版本 333)
++++ api/src/rum_api_ut.cpp	(版本 334)
+@@ -309,11 +309,11 @@
+     g_pRet_mock_get_process_record = &process;
+     QueueT.flag = RUM_FLAG_QUEUE_DEL;
+ 	QueueT.tag = 0;
++    QueueT.tag=mock_uni_check_tag();
+ 	g_nRet_mock_uni_message_send=0;
+ 	g_pRet_mock_uni_txsocket_from_connection = socket;
+     EXPECT_EQ(-12, rumTSubmitMsg(&QueueT, NULL, 0, NULL));
+ 	
+-	QueueT.tag=mock_uni_check_tag();
+     QueueT.flag = 0;
+     g_nRet_mock_uni_message_encoded = 50;
+     g_pRet_mock_uni_txsocket_from_connection = zsocket_new(zctx_new(), ZMQ_PUSH);
+
+Index: api/src/rum_api.c
+===================================================================
+--- api/src/rum_api.c	(版本 335)
++++ api/src/rum_api.c	(版本 336)
+@@ -107,12 +107,6 @@
+   }
+ 
+   tbu_instance->tag=uni_end_tag();
+-  uni_listener_stop(su_instance);
+-  UNI_LOG_NOTICE(log,"listener thread stop.[%d]",tbu_instance->instance);
+-  
+-  uni_monitor_event_stop(su_instance);
+-  UNI_LOG_NOTICE(log,"monitor event thread stop.[%d]",tbu_instance->instance);
+-
+   /*关闭实例上所有链接*/
+   nConnMax = get_resource_control(UNI_CONTROL_CONPERINS);
+   for(i=0; i<nConnMax; i++) {
+@@ -122,7 +116,13 @@
+     }
+   }
+   UNI_LOG_NOTICE(log,"close all connection of the instance success.[%d]",tbu_instance->instance);
++
++  uni_listener_stop(su_instance);
++  UNI_LOG_NOTICE(log,"listener thread stop.[%d]",tbu_instance->instance);
+   
++  uni_monitor_event_stop(su_instance);
++  UNI_LOG_NOTICE(log,"monitor event thread stop.[%d]",tbu_instance->instance);
++  
+   if (su_instance->ctx!=NULL)
+ 	  uni_instance_ctx_destroy(su_instance);
+   uni_instance_destroy(tbu_instance->instance);
+
+Index: cmq/src/zloop.c
+===================================================================
+--- cmq/src/zloop.c	(版本 343)
++++ cmq/src/zloop.c	(版本 344)
+@@ -125,7 +125,8 @@
+ 
+     s_poller_t *poller = (s_poller_t *) zlist_first (self->pollers);
+     uint item_nbr = 0;
+-    while (poller) {
++    int  i;
++    for(i=0; i<self->poll_size && poller; i++) {
+         self->pollset [item_nbr] = poller->item;
+         self->pollact [item_nbr] = *poller;
+         item_nbr++;
+
+Index: business/src/uni_queue.c
+===================================================================
+--- business/src/uni_queue.c	(版本 344)
++++ business/src/uni_queue.c	(版本 345)
+@@ -18,10 +18,10 @@
+ }
+ 
+ uni_sendqueue_t * uni_sendqueue_new(uni_instance_t *su_instance,uni_connection_t * su_connection ,char *queue_name) {
+-  uni_sendqueue_t			*sendqueue	= NULL;
+-  int						pos			= 0;
+-  apr_status_t				rv			= 0;
+-  uni_log_t					*log		= get_log();
++  uni_sendqueue_t        *sendqueue	         = NULL;
++  apr_status_t            rv                 = 0;
++  uni_log_t              *log                = get_log();
++  apr_pool_t             *new_sendqueue_pool = NULL;
+ 
+   if(su_connection==NULL || su_connection->rum_conn == NULL)
+   {
+@@ -33,10 +33,13 @@
+ 	   UNI_LOG_ERROR(log,"%s","queue name null");
+ 	  return NULL;
+   }
+-  rv = apr_queue_pop(get_process_record()->uni_sendqueue_pool, (void **)&pos);
+-  assert(rv == APR_SUCCESS);
+-  sendqueue = get_process_record()->uni_sendqueue[pos];
+-  sendqueue->_parent.queueId = pos;
++  
++  if(APR_SUCCESS != apr_pool_create(&new_sendqueue_pool, su_connection->conn_pool)) {
++    UNI_LOG_ERROR(log,"%s","Failed to create new pool for sendqueue!");
++    return NULL;
++  }
++  sendqueue = (uni_sendqueue_t *)apr_palloc(new_sendqueue_pool, sizeof(uni_sendqueue_t));
++  sendqueue->pool = new_sendqueue_pool;
+   sendqueue->_parent.is_running = TRUE;
+   sendqueue->su_connection = su_connection;
+   sendqueue->source_ip = su_connection->rum_conn->local_addr;
+@@ -95,8 +98,9 @@
+ }
+ 
+ apr_status_t uni_sendqueue_close(uni_sendqueue_t * q) {
+-  q->_parent.is_running = FALSE;
+-  apr_queue_push(get_process_record()->uni_sendqueue_pool, (void *)q->_parent.queueId);
++  /*q->_parent.is_running = FALSE;*/
++  /*apr_queue_push(get_process_record()->uni_sendqueue_pool, (void *)q->_parent.queueId);*/
++  apr_pool_destroy(q->pool);
+   return APR_SUCCESS;
+ }
+ 
+@@ -130,7 +134,7 @@
+   apr_thread_mutex_lock(c->queue_mutex);
+   for(i=0; i<nQueueNum; i++) {
+     if(NULL != *(c->queue+i)) {
+-      uni_queue = get_process_record()->uni_sendqueue[((rumQueueT *)*(c->queue+i))->handle];
++      uni_queue = (uni_sendqueue_t *)((rumQueueT *)*(c->queue+i))->send_queue;
+       if(!apr_strnatcmp(uni_queue->name, queue_name)) {
+         uni_queue->status = UNI_QUEUE_STATUS_PAUSE;
+         UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Stoping sending message!", c->connectid, queue_name);
+@@ -154,7 +158,7 @@
+   apr_thread_mutex_lock(c->queue_mutex);
+   for(i=0; i<nQueueNum; i++) {
+     if(NULL != *(c->queue+i)) {
+-      uni_queue = get_process_record()->uni_sendqueue[((rumQueueT *)*(c->queue+i))->handle];
++      uni_queue = (uni_sendqueue_t *)(((rumQueueT *)*(c->queue+i))->send_queue);
+       /*队列名为空时则清除连接上所有队列暂停标志*/
+       if(NULL == queue_name) {
+         uni_queue->status = UNI_QUEUE_STATUS_NORMAL;
+Index: business/src/uni_instance.c
+===================================================================
+--- business/src/uni_instance.c	(版本 344)
++++ business/src/uni_instance.c	(版本 345)
+@@ -115,10 +115,10 @@
+   status = apr_pool_create(&g_process.pool, NULL);
+ 
+   init_instance(g_process.pool);
+-  init_send_queue(g_process.pool);
++  /*init_send_queue(g_process.pool);*/
+   init_recv_queue(g_process.pool);
+ 
+- //创建日志
++ /*创建日志*/
+   uni_allocate_log(log,uni_zlog_init,uni_zlog_write,uni_zlog_destroy);
+   LOG_INIT(log,(char *)tbu_config->log_configure);
+   strcpy(log->category_name,tbu_config->log_category);
+@@ -183,7 +183,7 @@
+    else
+ 	   instance->patch_size = MAX_FRAME_MESSAGE_SIZE;
+    UNI_LOG_DEBUG(log,"patch_size [%d]",instance->patch_size);
+-   if(tbu_config->recv_file_path!=NULL)
++   if((strlen(tbu_config->recv_file_path) <= 0) || (strlen(tbu_config->recv_file_path) >= RUM_RECV_FILE_PATH_LEN))
+ 	   apr_cpystrn(instance->recv_file_path, tbu_config->recv_file_path, RUM_RECV_FILE_PATH_LEN);
+    else
+ 	   apr_cpystrn(instance->recv_file_path, RUM_RECV_FILE_PATH, RUM_RECV_FILE_PATH_LEN);
+Index: api/include/rumCapi.h
+===================================================================
+--- api/include/rumCapi.h	(版本 344)
++++ api/include/rumCapi.h	(版本 345)
+@@ -415,11 +415,12 @@
+ 
+ typedef struct
+ {
+-        int handle ;                   
+-        int instance ;                 
+-        char rsrv[16] ;
+-        int flag;
+-		unsigned int tag;
++  int               handle ;
++  int               instance ;
++  char              rsrv[16] ;
++  int               flag;
++  void             *send_queue;
++  unsigned int      tag;
+ }rumQueueT ;
+ 
+ typedef struct
+Index: api/src/rum_api.c
+===================================================================
+--- api/src/rum_api.c	(版本 344)
++++ api/src/rum_api.c	(版本 345)
+@@ -472,7 +472,8 @@
+   }
+ 
+   queue_t->instance = tbu_instance->instance;
+-  queue_t->handle = uni_sendqueue_getid(send_queue);
++  queue_t->send_queue = send_queue;
++  /*queue_t->handle = uni_sendqueue_getid(send_queue);*/
+   send_queue->stream_id = uni_streamID_create(send_queue->source_ip,queue_t->instance,queue_t->handle,connection->connectid);
+   queue_t->flag &= ~RUM_FLAG_QUEUE_DEL;
+   queue_t->tag = uni_check_tag();
+@@ -481,7 +482,7 @@
+   apr_thread_mutex_lock(connection->queue_mutex);
+   for(i=0; i<connection->queue_cur; i++) {
+     if(NULL != *(connection->queue+i)) {
+-      connection_queue = get_process_record()->uni_sendqueue[((rumQueueT *)*(connection->queue+i))->handle];
++      connection_queue = (uni_sendqueue_t*)((rumQueueT *)*(connection->queue+i))->send_queue;
+       if(!apr_strnatcmp(connection_queue->name, queue_params->queue_name)) {
+         apr_thread_mutex_unlock(connection->queue_mutex);
+ 		UNI_LOG_ERROR(log,"the queue name exist [%s]",queue_params->queue_name);
+@@ -519,7 +520,8 @@
+   /*关闭队列*/
+   queue_t->flag |= RUM_FLAG_QUEUE_DEL;
+   queue_t->tag = uni_end_tag();
+-  if(NULL==(send_queue = get_process_record()->uni_sendqueue[queue_t->handle]) || send_queue->su_connection==NULL)
++  send_queue = (uni_sendqueue_t *)queue_t->send_queue;
++  if(NULL==send_queue || send_queue->su_connection==NULL)
+   {
+ 	  UNI_LOG_ERROR(log,"send queue null. queue_t handle[%d]", queue_t->handle);
+ 	  return  RUM_ERR_QUEUE_GET;
+@@ -592,7 +594,7 @@
+   }
+ 
+   /*检查队列是否暂停*/
+-  if(NULL ==(send_queue = get_process_record()->uni_sendqueue[queue_t->handle]))
++  if(NULL == (send_queue = (uni_sendqueue_t*)queue_t->send_queue))
+   {
+ 	  UNI_LOG_ERROR(log,"send queue null. queue_t handle[%d]", queue_t->handle);
+ 	  return  RUM_ERR_QUEUE_GET;
+@@ -850,7 +852,8 @@
+ RUMAPI_DLL(int) rumTGetQueueStatistics(const rumQueueT *queue_t, rumTStreamStats *report, int *rc) {
+   uni_sendqueue_t      *send_queue;
+ 
+-  send_queue = get_process_record()->uni_sendqueue[queue_t->handle];
++  /*send_queue = get_process_record()->uni_sendqueue[queue_t->handle];*/
++  send_queue = (uni_sendqueue_t *)queue_t->send_queue;
+   report->timestamp           = apr_time_sec(send_queue->timestamp);
+   report->messages_sent       = send_queue->messages_sent;
+   report->bytes_sent          = send_queue->bytes_sent;
+@@ -864,7 +867,8 @@
+ RUMAPI_DLL(int) rumTResetQueueStatistics(const rumQueueT *queue_t, int *rc) {
+   uni_sendqueue_t      *send_queue;
+ 
+-  send_queue = get_process_record()->uni_sendqueue[queue_t->handle];
++  /*send_queue = get_process_record()->uni_sendqueue[queue_t->handle];*/
++  send_queue = (uni_sendqueue_t *)queue_t->send_queue;
+   send_queue->timestamp           = apr_time_now();
+   send_queue->total_messages_sent += send_queue->messages_sent;
+   send_queue->total_bytes_sent    += send_queue->bytes_sent;
+@@ -960,7 +964,8 @@
+   if(NULL == latency_info)
+     return -1;
+ 
+-  send_queue = get_process_record()->uni_sendqueue[queue_t->handle];
++  /*send_queue = get_process_record()->uni_sendqueue[queue_t->handle];*/
++  send_queue = (uni_sendqueue_t *)queue_t->send_queue;
+   conn = uni_sendqueue_get_connection(send_queue);
+ 
+   if(latency_info->hist_business) {
+
+Index: api/include/rumCapi.h
+===================================================================
+--- api/include/rumCapi.h	(版本 347)
++++ api/include/rumCapi.h	(版本 348)
+@@ -362,7 +362,7 @@
+ 
+ #define RUM_MAX_RX_QUEUES              1024
+ 
+-#define RUM_MAX_TX_CONNECTION			RUM_MAX_TX_QUEUES
++#define RUM_MAX_TX_CONNECTION          1000
+ 
+  /* Constants used in the definitions of the API data structures */
+ 
+@@ -386,9 +386,9 @@
+ 
+ #define RUM_LOG_CONFIGURE_LEN		  128
+ 
+-#define RUM_PATCH_SIZE_MIN				0
++#define RUM_PATCH_SIZE_MIN             1024
+ 
+-#define RUM_PATCH_SIZE_MAX				20971520  /*20MB*/
++#define RUM_PATCH_SIZE_MAX            (64*1024)  /*64K*/
+ 
+ #define RUM_MESSAGE_PROPERTY_SIZE_MAX	104857600 /*100MB*/
+ 
+
+Index: business/include/uni_queue.h
+===================================================================
+--- business/include/uni_queue.h	(版本 348)
++++ business/include/uni_queue.h	(版本 349)
+@@ -18,6 +18,7 @@
+ #define STREAM_ID_SEED 0xEE6B27EB
+ #define SREAMID_LEN	88
+ #define UNI_QUEUE_STATUS_NORMAL   0x00
++#define UNI_QUEUE_STATUS_STOP     0x01
+ #define UNI_QUEUE_STATUS_PAUSE    0x02
+ #define UNI_QUEUE_STATUS_RESTART  0x03
+ 
+@@ -108,6 +109,7 @@
+ RUMAPI_DLL(apr_status_t) uni_recvqueue_close(uni_recvqueue_t *r);
+ RUMAPI_DLL(apr_status_t) uni_sendqueue_pause(uni_connection_t *c, char *queue_name);
+ RUMAPI_DLL(apr_status_t) uni_sendqueue_continue(uni_connection_t *c, char *queue_name);
++RUMAPI_DLL(apr_status_t) uni_sendqueue_stop(uni_connection_t *c, char *queue_name);
+ RUMAPI_DLL(int) uni_sendqueue_getid (uni_sendqueue_t *sendqueue);
+ RUMAPI_DLL(int) uni_recvqueue_getid(uni_recvqueue_t *recvqueue);
+ //RUMAPI_DLL(apr_status_t uni_recvqueue_setparams(uni_sendqueue_t *sq, const rumTxQueueParameters *queue_params);
+Index: business/src/uni_queue.c
+===================================================================
+--- business/src/uni_queue.c	(版本 348)
++++ business/src/uni_queue.c	(版本 349)
+@@ -137,7 +137,7 @@
+       uni_queue = (uni_sendqueue_t *)((rumQueueT *)*(c->queue+i))->send_queue;
+       if(!apr_strnatcmp(uni_queue->name, queue_name)) {
+         uni_queue->status = UNI_QUEUE_STATUS_PAUSE;
+-        UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Stoping sending message!", c->connectid, queue_name);
++        UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] pause sending message!", c->connectid, queue_name);
+         break;
+       }
+     }
+@@ -162,11 +162,11 @@
+       /*队列名为空时则清除连接上所有队列暂停标志*/
+       if(NULL == queue_name) {
+         uni_queue->status = UNI_QUEUE_STATUS_NORMAL;
+-        UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Restart sending message!", c->connectid, uni_queue->name);
++        UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] continue sending message!", c->connectid, uni_queue->name);
+       }else {
+         if(!apr_strnatcmp(uni_queue->name, queue_name)) {
+           uni_queue->status = UNI_QUEUE_STATUS_NORMAL;
+-          UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] Restart sending message!", c->connectid, queue_name);
++          UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] continue sending message!", c->connectid, queue_name);
+           break;
+         }
+       }
+@@ -178,6 +178,36 @@
+ 
+ }
+ 
++apr_status_t uni_sendqueue_stop(uni_connection_t *c, char *queue_name) {
++	uni_sendqueue_t        *uni_queue		= NULL;
++	int                     nQueueNum		= 0;
++	int                     i           = 0;
++	uni_log_t              *log         = get_log();
++  
++  /*设置停止标志*/
++  nQueueNum = get_resource_control(UNI_CONTROL_QUEUEPERCON);
++  apr_thread_mutex_lock(c->queue_mutex);
++  for(i=0; i<nQueueNum; i++) {
++    if(NULL != *(c->queue+i)) {
++      uni_queue = (uni_sendqueue_t *)(((rumQueueT *)*(c->queue+i))->send_queue);
++      /*队列名为空时则连接上所有队列停止*/
++      if(NULL == queue_name) {
++        uni_queue->status = UNI_QUEUE_STATUS_STOP;
++        UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] stop sending message!", c->connectid, uni_queue->name);
++      }else {
++        if(!apr_strnatcmp(uni_queue->name, queue_name)) {
++          uni_queue->status = UNI_QUEUE_STATUS_STOP;
++          UNI_LOG_DEBUG(log,"conn[%llu] queue[%s] stop sending message!", c->connectid, queue_name);
++          break;
++        }
++      }
++    }
++  }
++  apr_thread_mutex_unlock(c->queue_mutex);
++
++  return APR_SUCCESS;
++}
++
+ uni_connection_t * uni_sendqueue_get_connection(uni_sendqueue_t * q) {
+   return q->su_connection;
+ }
+Index: business/src/uni_connection.c
+===================================================================
+--- business/src/uni_connection.c	(版本 348)
++++ business/src/uni_connection.c	(版本 349)
+@@ -666,6 +666,8 @@
+         break;
+         
+       case ZMQ_EVENT_DISCONNECTED:  /*连接断开*/
++        /*连接断开停止所有发送队列*/
++        uni_sendqueue_stop(connection, NULL);
+         if(connection->on_event) {
+           event_ret.type  = RUM_CONNECTION_BROKE;
+           event_ret.fd    = event_rcv.data.disconnected.fd;
+Index: api/include/rumCapi.h
+===================================================================
+--- api/include/rumCapi.h	(版本 348)
++++ api/include/rumCapi.h	(版本 349)
+@@ -87,19 +87,11 @@
+ #define  RUM_ERR_CONN_CLOSE          -5
+ #define  RUM_ERR_CONN_CLOSED         -6
+ #define	 RUM_ERR_CONN_PARAMETER      -7
+-#define  RUM_ERR_CONN_NULL			 -8
+-#define  RUM_ERR_CONN_SOCKET_NULL	 -9
+-#define  RUM_ERR_CONN_CONNECT		-10
+-#define  RUM_ERR_QUEUE_MAX          -11
+-#define  RUM_ERR_QUEUE_DEL          -12
+-#define  RUM_ERR_QUEUE_EXIST        -13
+-#define  RUM_ERR_QUEUE_NAME         -14
+-#define  RUM_ERR_QUEUE_PAUSE        -15
+-#define  RUM_ERR_QUEUE_PARAMS		-16
+-#define  RUM_ERR_QUEUE_NEW			-17
+-#define  RUM_ERR_QUEUE_GET			-18
+-#define  RUM_ERR_QUEUE_CONN			-19
+-#define  RUM_ERR_CONN_INS			-20
++#define  RUM_ERR_CONN_NULL           -8
++#define  RUM_ERR_CONN_SOCKET_NULL    -9
++#define  RUM_ERR_CONN_CONNECT       -10
++
++#define  RUM_ERR_CONN_INS           -20
+ #define  RUM_ERR_MSG_SEND_ERROR     -21
+ #define  RUM_ERR_FILE_WRITE	        -22
+ #define  RUM_ERR_FILE_OPEN          -23
+@@ -108,9 +100,21 @@
+ #define  RUM_ERR_FILE_READ          -26
+ #define  RUM_ERR_ENCODE             -27
+ #define  RUM_ERR_FILE_PATH_CREATE   -28
+-#define  RUM_ERR_MSG_PARAMS			-29
++#define  RUM_ERR_MSG_PARAMS         -29
+ #define  RUM_MESSAGE_PROPERTY_SIZE  -30
+-#define  RUM_MESSAGE_PROPERTY		-31
++#define  RUM_MESSAGE_PROPERTY       -31
++
++#define  RUM_ERR_QUEUE_PARAMS       -50
++#define  RUM_ERR_QUEUE_NEW          -51
++#define  RUM_ERR_QUEUE_GET          -52
++#define  RUM_ERR_QUEUE_CONN         -53
++#define  RUM_ERR_QUEUE_MAX          -54
++#define  RUM_ERR_QUEUE_DEL          -55
++#define  RUM_ERR_QUEUE_EXIST        -56
++#define  RUM_ERR_QUEUE_NAME         -57
++#define  RUM_ERR_QUEUE_PAUSE        -58
++#define  RUM_ERR_QUEUE_STOP         -59
++
+ #define  RUM_ERR_NULL_INSTANCE     -100
+ #define  RUM_ERR_NULL_STATISTICS   -101
+ 
+Index: api/src/rum_api.c
+===================================================================
+--- api/src/rum_api.c	(版本 348)
++++ api/src/rum_api.c	(版本 349)
+@@ -601,7 +601,9 @@
+   }
+   if(UNI_QUEUE_STATUS_PAUSE == send_queue->status)
+     return RUM_ERR_QUEUE_PAUSE;
+- 
++  else if(UNI_QUEUE_STATUS_STOP == send_queue->status)
++    return RUM_ERR_QUEUE_STOP;
++  
+   if(NULL==(conn = uni_sendqueue_get_connection(send_queue)))
+   {
+ 	  UNI_LOG_ERROR(log,"get connection from send queue null. queue_t handle[%d]", queue_t->handle);
+
+Index: business/src/uni_instance.c
+===================================================================
+--- business/src/uni_instance.c	(版本 351)
++++ business/src/uni_instance.c	(版本 352)
+@@ -175,7 +175,7 @@
+         instance->svrPort = tbu_config->ServerSocketPort;
+     }
+     UNI_LOG_DEBUG(log, "server port [%d]", instance->svrPort);
+-    if(tbu_config->patch_size > RUM_PATCH_SIZE_MIN && tbu_config->patch_size <= RUM_PATCH_SIZE_MAX) {
++    if(tbu_config->patch_size >= RUM_PATCH_SIZE_MIN && tbu_config->patch_size <= RUM_PATCH_SIZE_MAX) {
+         instance->patch_size = tbu_config->patch_size;
+     } else {
+         instance->patch_size = MAX_FRAME_MESSAGE_SIZE;
+Index: api/src/rum_api.c
+===================================================================
+--- api/src/rum_api.c	(版本 351)
++++ api/src/rum_api.c	(版本 352)
+@@ -432,11 +432,8 @@
+         UNI_LOG_ERROR(log, "%s", "uni_instance null.");
+         return RUM_ERR_NULL_INSTANCE;
+     }
+-    if(apr_atomic_inc32(&su_instance->nTQueueNum) >= RUM_MAX_TX_QUEUES) {
+-        apr_atomic_dec32(&su_instance->nTQueueNum);
+-        UNI_LOG_ERROR(log, "the queue number is g_max_queue_per_instance [%d]", RUM_MAX_TX_QUEUES);
+-        return RUM_ERR_QUEUE_MAX;
+-    }
++    apr_atomic_inc32(&su_instance->nTQueueNum);
++
+     /*初始化并创建队列*/
+     if(NULL == (send_queue = uni_sendqueue_new(su_instance , connection , queue_params->queue_name))) {
+         UNI_LOG_ERROR(log, "uni_sendqueue new error. instane_num[%d],connectionid[%d]",
+

@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns:lxslt="http://xml.apache.org/xslt" xmlns:stringutils="xalan://org.apache.tools.ant.util.StringUtils">
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<title>&#25104;&#37117;&#30740;&#21457;&#39033;&#30446;&#20449;&#24687;.</title>
+<style type="text/css">
+      body {
+        font:normal 68% verdana,arial,helvetica;
+        color:#000000;
+      }
+      table tr td, table tr th {
+          font-size: 68%;
+      }
+      table.details tr th{
+        font-weight: bold;
+        text-align:left;
+        background:#a6caf0;
+      }
+      table.details tr td{
+        background:#eeeee0;
+      }
+
+      p {
+        line-height:1.5em;
+        margin-top:0.5em; margin-bottom:1.0em;
+      }
+      h1 {
+        margin: 0px 0px 5px; font: 165% verdana,arial,helvetica
+      }
+      h2 {
+        margin-top: 1em; margin-bottom: 0.5em; font: bold 125% verdana,arial,helvetica
+      }
+      h3 {
+        margin-bottom: 0.5em; font: bold 115% verdana,arial,helvetica
+      }
+      h4 {
+        margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
+      }
+      h5 {
+        margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
+      }
+      h6 {
+        margin-bottom: 0.5em; font: bold 100% verdana,arial,helvetica
+      }
+      .Error {
+        font-weight:bold; color:red;
+      }
+      .Failure {
+        font-weight:bold; color:purple;
+      }
+      .Properties {
+        text-align:right;
+      }
+      </style>
+<script type="text/javascript" language="JavaScript">
+        var TestCases = new Array();
+        var cur;
+        </script><script type="text/javascript" language="JavaScript">
+        function displayProperties (name) {
+          var win = window.open('','JUnitSystemProperties','scrollbars=1,resizable=1');
+          var doc = win.document;
+          doc.open();
+          doc.write("<html><head><title>Properties of " + name + "</title>");
+          doc.write("<style>")
+          doc.write("body {font:normal 68% verdana,arial,helvetica; color:#000000; }");
+          doc.write("table tr td, table tr th { font-size: 68%; }");
+          doc.write("table.properties { border-collapse:collapse; border-left:solid 1 #cccccc; border-top:solid 1 #cccccc; padding:5px; }");
+          doc.write("table.properties th { text-align:left; border-right:solid 1 #cccccc; border-bottom:solid 1 #cccccc; background-color:#eeeeee; }");
+          doc.write("table.properties td { font:normal; text-align:left; border-right:solid 1 #cccccc; border-bottom:solid 1 #cccccc; background-color:#fffffff; }");
+          doc.write("h3 { margin-bottom: 0.5em; font: bold 115% verdana,arial,helvetica }");
+          doc.write("</style>");
+          doc.write("</head><body>");
+          doc.write("<h3>Properties of " + name + "</h3>");
+          doc.write("<div align=\"right\"><a href=\"javascript:window.close();\">Close</a></div>");
+          doc.write("<table class='properties'>");
+          doc.write("<tr><th>Name</th><th>Value</th></tr>");
+          for (prop in TestCases[name]) {
+            doc.write("<tr><th>" + prop + "</th><td>" + TestCases[name][prop] + "</td></tr>");
+          }
+          doc.write("</table>");
+          doc.write("</body></html>");
+          doc.close();
+          win.focus();
+        }
+      
+      </script>
+</head>
+<body>
+<a name="top"></a>
+<h1>&#25104;&#37117;&#30740;&#21457;&#39033;&#30446;&#20449;&#24687;.</h1>
+<table width="100%">
+<tr>
+<td align="left"></td><td align="right">Designed for use with <a href="http://www.tongtech.com">CDEV</a>.</td>
+</tr>
+</table>
+<hr size="1">
+<h2>BAM1</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+</table>
+<hr size="1">
+<h2>CEP2</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+<tr>
+<td>CEPB-56</td><td>Open</td><td>linjinga</td><td>0</td><td>0</td><td>&#20316;&#20026;&#29992;&#25143;,&#36755;&#20986;broker&#31867;&#22411;-,localbroker,jmsbroker,wseventbroker,agentbroker,Map&#28040;&#24687;</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>CEPB-26</td><td>Open</td><td>zhaojl</td><td>0</td><td>0</td><td>&#20316;&#20026;&#29992;&#25143;,&#20854;&#20182; aggregate Function(fistever,lastever,leaving,nth,rate(number of time), Rate(timestamp))</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>CEPB-22</td><td>Open</td><td>zhaojl</td><td>0</td><td>0</td><td>&#20316;&#20026;&#29992;&#25143;,Aggregate: SQL-standard function(sum, avg, count, max, min, median, stddev, avedev,fmax,fmin)</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+</table>
+<hr size="1">
+<h2>EDGE2</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+<tr>
+<td>EDGEB-5</td><td>DevInpro</td><td>yanyma</td><td>0</td><td>0</td><td>&#29992;&#25143;&#21487;&#25805;&#20316;&#26381;&#21153;&#39029;&#38754;&#25104;&#21151;&#19982;EDGE&#26381;&#21153;&#24314;&#31435;&#36830;&#25509;</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+</table>
+<hr size="1">
+<h2>FSC1</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+</table>
+<hr size="1">
+<h2>JMS20</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+</table>
+<hr size="1">
+<h2>LLMC2</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+<tr>
+<td>LLMCB-17</td><td>Open</td><td>liurla</td><td>0</td><td>0</td><td>&#20316;&#20026;&#25216;&#26415;&#25925;&#20107;&#65292;&#38656;&#35201;&#35843;&#36890;libevent-nginx&#20043;&#38388;&#30340;http/s&#19978;&#20256;&#21644;&#19979;&#36733;</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+</table>
+<hr size="1">
+<h2>LLMJ2</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+</table>
+<hr size="1">
+<h2>Proxy2</h2>
+<table border="1">
+<tr>
+<th>KEY</th><th>&#29366;&#24577;</th><th>&#24320;&#21457;&#32773;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th><th>&#24635;&#32467;</th>
+</tr>
+<tr>
+<td>PROXYB-4</td><td>DevInpro</td><td>luohqa</td><td>0</td><td>0</td><td>&#20316;&#20026;tlq&#65292;&#38656;&#35201;&#25903;&#25345;AIX&#65292;linux&#65292;windows&#24179;&#21488;</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>PROXYB-1</td><td>Open</td><td>yanjie</td><td>0</td><td>0</td><td>&#20316;&#20026;tlq&#65292;&#38656;&#35201;&#25903;&#25345;tlsend,tlrecv&#36716;&#21457;</td>
+		&#12288;&#12288;&#12288;&#12288; </tr>
+</table>
+<hr size="1">
+<h2>&#25925;&#20107;&#32479;&#35745;</h2>
+<table border="1">
+<tr>
+<th>&#21517;&#31216;</th><th>&#23436;&#25104;&#25968;&#37327;</th><th>&#23436;&#25104;&#28857;&#25968;</th><th>&#21097;&#20313;&#25968;&#37327;</th><th>&#21097;&#20313;&#28857;&#25968;</th><th>&#26410;&#30693;&#25968;&#37327;</th>
+</tr>
+<tr>
+<td>BAM1</td><td>0.0</td><td>0.0</td><td>1.0</td><td>1.0</td><td>6.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>CEP2</td><td>0.0</td><td>0.0</td><td>40.0</td><td>107.0</td><td>8.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>EDGE2</td><td>6.0</td><td>5.5</td><td>20.0</td><td>5.5</td><td>10.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>FSC1</td><td>0.0</td><td>0.0</td><td>2.0</td><td>3.0</td><td>3.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>JMS20</td><td>0.0</td><td>0.0</td><td>6.0</td><td>13.0</td><td>2.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>LLMC2</td><td>0.0</td><td>0.0</td><td>2.0</td><td>4.0</td><td>22.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>LLMJ2</td><td>0.0</td><td>0.0</td><td>1.0</td><td>2.0</td><td>12.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+<tr>
+<td>Proxy2</td><td>0.0</td><td>0.0</td><td>11.0</td><td>30.0</td><td>2.0</td>
+	&#12288;&#12288;&#12288;&#12288; </tr>
+</table>
+<hr size="1">
+<h2>&#20010;&#20154;&#32479;&#35745;</h2>
+<table border="1">
+<tr>
+<th>&#21517;&#31216;</th><th>&#20219;&#21153;&#26102;&#38388;</th><th>&#26085;&#24535;&#26102;&#38388;</th><th>&#26085;&#24535;&#27425;&#25968;</th>
+</tr>
+<tr>
+<td>caoyang</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>chengcca</td><td>8</td><td>8</td><td>1</td>
+</tr>
+<tr>
+<td>chengwba</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>hedba</td><td>24</td><td>8</td><td>1</td>
+</tr>
+<tr>
+<td>helei</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>huangqiana</td><td>23</td><td>8</td><td>1</td>
+</tr>
+<tr>
+<td>lanyonga</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>liurla</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>liyina</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>luohqa</td><td>5</td><td>8</td><td>1</td>
+</tr>
+<tr>
+<td>qinsx</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>sunleia</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>tangcheng</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>tanjiana</td><td>0</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>yanyma</td><td>11</td><td>0</td><td>0</td>
+</tr>
+<tr>
+<td>yaolia</td><td>2</td><td>2</td><td>1</td>
+</tr>
+<tr>
+<td>zhaojl</td><td>2</td><td>13</td><td>3</td>
+</tr>
+<tr>
+<td>zhongcya</td><td>24</td><td>8</td><td>1</td>
+</tr>
+<tr>
+<td>zhukanga</td><td>0</td><td>0</td><td>0</td>
+</tr>
+</table>
+<hr size="1">
+</body>
+</html>

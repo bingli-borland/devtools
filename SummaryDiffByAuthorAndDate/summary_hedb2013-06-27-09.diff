@@ -1,0 +1,32 @@
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagApp.java	(版本 634)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagApp.java	(版本 635)
+@@ -30,6 +30,7 @@
+ 	/** The amount of time to keep tags around as recent tags */
+ 	private String recentTagTimeout;
+ 	private Log logger = LogFactory.getLog(TagApp.class);
++	private float tagRate = 0.0f;
+ 
+ 	/**
+ 	 * 
+@@ -148,6 +149,7 @@
+ 								logger.info("Saw " + count + " tags in "
+ 										+ seconds + " seconds. Rate: " + rate
+ 										+ " tags/second");
++								tagRate = rate;
+ 							}
+ 						}
+ 
+@@ -157,6 +159,10 @@
+ 
+ 	}
+ 
++	public float getTagRate() {
++		return this.tagRate;
++	}
++
+ 	/*
+ 	 * (non-Javadoc)
+ 	 * 
+

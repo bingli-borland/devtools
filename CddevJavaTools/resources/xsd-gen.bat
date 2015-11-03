@@ -1,0 +1,1 @@
+E:\Runenv\jdk1.6.0_33\bin\xjc code-line-by-people.xsd -d ../code-line-by-people/src/main/generated -p com.tongtech.svntools

@@ -1,0 +1,1 @@
+set CLASSPATH=./bin;./lib/commons-io-1.3.2.jar;./lib/ganymed.jar;./lib/javasvn.jar;./lib/svnant.jar;./lib/svnClientAdapter.jar;./lib/svnjavahl.jar;E:\devtools\apache-ant-1.7.0\lib\ant.jar;E:\devtools\apache-ant-1.7.0\lib\ant-launcher.jar;

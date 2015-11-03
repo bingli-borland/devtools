@@ -1,0 +1,555 @@
+Index: src/conf/rule/autoload_configs/modules.conf.xml
+===================================================================
+--- src/conf/rule/autoload_configs/modules.conf.xml	(版本 355)
++++ src/conf/rule/autoload_configs/modules.conf.xml	(版本 356)
+@@ -4,9 +4,9 @@
+ 	<load module="mod_logfile"/>
+ 	<load module="mod_moni_tlq"/>
+ 	<load module="mod_event_libuv"/>
++	<load module="mod_dataflow_action"/>
+ 	<load module="mod_dataflow_rule"/>
+ 	<load module="mod_rule_xml"/>
+-	<load module="mod_dataflow_action"/>
+ 	<load module="mod_codec_tlq"/>
+ 	<load module="mod_dptools"/>
+ 	<load module="mod_monitor_bson"/>
+Index: src/src/comfra_core_state_machine.c
+===================================================================
+--- src/src/comfra_core_state_machine.c	(版本 355)
++++ src/src/comfra_core_state_machine.c	(版本 356)
+@@ -120,7 +120,7 @@
+ 
+     if ((caller_profile = comfra_channel_get_caller_profile(session->channel)) == 0) {
+         comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session), COMFRA_LOG_ERROR, "Can't get profile!\n");
+-        comfra_channel_hangup(session->channel, COMFRA_CAUSE_DESTINATION_OUT_OF_ORDER);
++        /*comfra_channel_hangup(session->channel, COMFRA_CAUSE_DESTINATION_OUT_OF_ORDER);*/
+         return;
+     } else {
+         char* dp[25];
+@@ -177,7 +177,7 @@
+                 if (comfra_channel_test_flag(session->channel, CF_ANSWERED)) {
+                     comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session), COMFRA_LOG_DEBUG,
+                                       "No Dialplan on answered channel, changing state to HANGUP\n");
+-                    comfra_channel_hangup(session->channel, COMFRA_CAUSE_NO_ROUTE_DESTINATION);
++                    /*comfra_channel_hangup(session->channel, COMFRA_CAUSE_NO_ROUTE_DESTINATION);*/
+                 } else {
+                     comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session), COMFRA_LOG_WARNING, "No Dialplan, nothing to do\n");
+                     //comfra_channel_set_state(session->channel, CS_CONSUME_MEDIA);
+@@ -219,7 +219,7 @@
+     comfra_channel_clear_flag(session->channel, CF_RESET);
+ 
+     if ((extension = comfra_channel_get_caller_extension(session->channel)) == 0) {
+-        comfra_channel_hangup(session->channel, COMFRA_CAUSE_NORMAL_CLEARING);
++        /*comfra_channel_hangup(session->channel, COMFRA_CAUSE_NORMAL_CLEARING);*/
+         return;
+     }
+ 
+@@ -390,12 +390,12 @@
+ 
+     while ((state = comfra_channel_get_state(session->channel)) != CS_DESTROY) {
+ 
+-        if (comfra_channel_test_flag(session->channel, CF_BLOCK_STATE)) {
++        /*if (comfra_channel_test_flag(session->channel, CF_BLOCK_STATE)) {
+             comfra_channel_wait_for_flag(session->channel, CF_BLOCK_STATE, COMFRA_FALSE, 0, NULL);
+             if ((state = comfra_channel_get_state(session->channel)) == CS_DESTROY) {
+                 break;
+             }
+-        }
++        }*/
+ 
+         midstate = state;
+         if (state != comfra_channel_get_running_state(session->channel) || state >= CS_HANGUP) {
+@@ -502,12 +502,12 @@
+                 /*comfra_yield(20000);*/
+ //TODO:				comfra_ivr_parse_all_events(session);
+                 comfra_channel_set_state(session->channel, CS_INIT);
+-                if (!--new_loops) {
++                /*if (!--new_loops) {
+                     comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session), COMFRA_LOG_WARNING, "%s %s Abandoned\n",
+                                       session->uuid_str, comfra_core_session_get_name(session));
+                     comfra_channel_set_flag(session->channel, CF_NO_CDR);
+                     comfra_channel_hangup(session->channel, COMFRA_CAUSE_WRONG_CALL_STATE);
+-                }
++                }*/
+             } else {
+ //TODO:				comfra_ivr_parse_all_events(session);
+ //TODO:				comfra_ivr_parse_all_events(session);
+Index: src/src/mod/data_flow/mod_dataflow_rule/mod_dataflow_rule.c
+===================================================================
+--- src/src/mod/data_flow/mod_dataflow_rule/mod_dataflow_rule.c	(版本 355)
++++ src/src/mod/data_flow/mod_dataflow_rule/mod_dataflow_rule.c	(版本 356)
+@@ -33,6 +33,9 @@
+ #define  HANDLE_READ_STOP_API_NAME "handle_read_stop"
+ static comfra_api_interface_t* handle_read_stop = NULL;
+ 
++#define  HANDLE_BRIDGE_DATA_NAME "bridge_data"
++static comfra_application_interface_t* handle_bridge = NULL;
++
+ typedef enum dataflow_rule_dialplan_t {
+     DIALPLAN_LINK,
+     DIALPLAN_MESSAGE
+@@ -230,7 +233,8 @@
+     if (comfra_channel_test_flag(channel, CF_DIALPLAN_MESSAGE)) { /*是否为消息路由*/
+         /*消息路由，处理报文*/
+         comfra_channel_set_flag(channel, CF_RING_READY);
+-        comfra_channel_set_state(channel, CS_ROUTING);
++        handle_bridge->application_function(session, comfra_channel_get_variable_dup(session->channel, COMFRA_DESTINATION_EIGENVALUE_VARIABLE, COMFRA_FALSE, -1));
++        //comfra_channel_set_state(channel, CS_ROUTING);
+     } else {
+         if (comfra_channel_test_flag(channel, CF_RING_READY)) { /*是否处理过第一个报文*/
+             /*连接路由，处理后续报文*/
+@@ -840,7 +844,15 @@
+     }
+     UNPROTECT_INTERFACE(handle_read_stop);
+ 
++    handle_bridge = comfra_loadable_module_get_application_interface(HANDLE_BRIDGE_DATA_NAME);
++    if (handle_bridge == NULL) {
++        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ERROR,
++                          "Communication module must be loaded before this module\n");
++        return COMFRA_STATUS_UNLOAD;
++    }
++    UNPROTECT_INTERFACE(handle_bridge);
+ 
++
+     cf_hook_handle_connect_cb(cm_connect_cb, NULL, NULL, APR_HOOK_MIDDLE);
+     cf_hook_handle_write_cb(cm_write_cb, NULL, NULL, APR_HOOK_MIDDLE);
+     cf_hook_handle_close(cm_handle_close, NULL, NULL, APR_HOOK_MIDDLE);
+Index: src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c
+===================================================================
+--- src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c	(版本 355)
++++ src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c	(版本 356)
+@@ -354,7 +354,7 @@
+     if (!ip || !port) {
+         comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session), COMFRA_LOG_ERROR,
+                           "The destination_ip or the destination_port is NULL.\n");
+-		cf_run_handle_close(session);
++        cf_run_handle_close(session);
+         return COMFRA_STATUS_FALSE;
+     }
+ 
+Index: src/src/include/comfra_event.h
+===================================================================
+--- src/src/include/comfra_event.h	(版本 355)
++++ src/src/include/comfra_event.h	(版本 356)
+@@ -75,6 +75,8 @@
+     int idx;
+     /*! hash of the header name */
+     unsigned long hash;
++    /*! memory pool*/
++    comfra_memory_pool_t* pool;
+     struct comfra_event_header* next;
+ };
+ 
+@@ -90,6 +92,8 @@
+     char* subclass_name;
+     /*! the pool which the event is allocated with */
+     comfra_memory_pool_t* pool;
++    /*! the temporary pool which the event is allocated with */
++    comfra_memory_pool_t* tmp_pool;
+     /*! the event headers */
+     comfra_event_header_t* headers;
+     /*! the event headers tail pointer */
+Index: src/src/comfra_event.c
+===================================================================
+--- src/src/comfra_event.c	(版本 355)
++++ src/src/comfra_event.c	(版本 356)
+@@ -35,6 +35,7 @@
+ #include <comfra.h>
+ #include <comfra_event.h>
+ #include "tpl.h"
++#include "apr_pools.h"
+ 
+ //#define COMFRA_EVENT_RECYCLE
+ #define DISPATCH_QUEUE_LEN 10000
+@@ -652,6 +653,7 @@
+         comfra_assert(pool);
+         *event = comfra_core_alloc(pool, sizeof(comfra_event_t));
+         comfra_assert(*event);
++        apr_pool_create(&(*event)->tmp_pool, pool);
+         (*event)->pool = pool;
+ #ifdef COMFRA_EVENT_RECYCLE
+     }
+@@ -699,7 +701,7 @@
+     for (hp = event->headers; hp; hp = hp->next) {
+         if ((!hp->hash || hash == hp->hash) && !strcasecmp(hp->name, header_name)) {
+             /*FREE(hp->name);*/
+-            hp->name = DUP_WITH_POOL(new_header_name, event->pool);
++            hp->name = DUP_WITH_POOL(new_header_name, hp->pool);
+             hlen = -1;
+             hp->hash = comfra_ci_hashfunc_default(hp->name, &hlen);
+             x++;
+@@ -804,6 +806,7 @@
+                 FREE(hp);
+             }
+ #else
++            apr_pool_destroy(hp->pool);
+             hp = NULL;
+             /*FREE(hp);*/
+ #endif
+@@ -818,7 +821,7 @@
+ 
+ static comfra_event_header_t* new_header(const char* header_name, comfra_memory_pool_t* pool) {
+     comfra_event_header_t* header;
+-
++    apr_pool_t* new_pool;
+ #ifdef COMFRA_EVENT_RECYCLE
+     void* pop;
+     if (EVENT_HEADER_RECYCLE_QUEUE && comfra_queue_trypop(EVENT_HEADER_RECYCLE_QUEUE, &pop) == COMFRA_STATUS_SUCCESS) {
+@@ -826,7 +829,10 @@
+     } else {
+ #endif
+         /*header = ALLOC(sizeof(*header));*/
+-        header = (comfra_event_header_t*)comfra_core_alloc(pool, sizeof(*header));
++        apr_pool_create(&new_pool, pool);
++        comfra_assert(new_pool);
++        header = (comfra_event_header_t*)comfra_core_alloc(new_pool, sizeof(*header));
++        header->pool = new_pool;
+         comfra_assert(header);
+ #ifdef COMFRA_EVENT_RECYCLE
+     }
+@@ -864,12 +870,12 @@
+         return -2;
+     }
+ 
+-    data = strdup(val + 7);
++    data = DUP_WITH_POOL(val + 7, event->tmp_pool);
+ 
+     len = (sizeof(char*) * max) + 1;
+     comfra_assert(len);
+ 
+-    array = malloc(len);
++    array = apr_pcalloc(event->tmp_pool, len);
+     memset(array, 0, len);
+ 
+     comfra_separate_string_string(data, "|:", array, max);
+@@ -878,8 +884,8 @@
+         comfra_event_add_header_string(event, COMFRA_STACK_PUSH, var, array[i]);
+     }
+ 
+-    free(array);
+-    free(data);
++    //free(array);
++    //free(data);
+ 
+     return 0;
+ }
+@@ -901,7 +907,7 @@
+                 header->valuelen = data_len;
+             }
+             strcpy(header->value, data);
+-            return COMFRA_STATUS_SUCCESS;
++            goto end;
+         }
+     }
+     /*end优化效率，添加修改堆栈*/
+@@ -913,7 +919,7 @@
+     if ((index_ptr = strchr(header_name, '['))) {
+         index_ptr++;
+         index = atoi(index_ptr);
+-        real_header_name = DUP_WITH_POOL(header_name, event->pool);
++        real_header_name = DUP_WITH_POOL(header_name, event->tmp_pool);
+         if ((index_ptr = strchr(real_header_name, '['))) {
+             *index_ptr++ = '\0';
+         }
+@@ -939,18 +945,18 @@
+                 if (index > -1 && index <= 4000) {
+                     if (index < header->idx) {
+                         /*FREE(header->array[index]);*/
+-                        header->array[index] = DUP_WITH_POOL(data, event->pool);
++                        header->array[index] = DUP_WITH_POOL(data, header->pool);
+                     } else {
+                         int i;
+                         char** m;
+ 
+-                        m = comfra_core_alloc(event->pool, sizeof(char*) * (index + 1));
++                        m = comfra_core_alloc(header->pool, sizeof(char*) * (index + 1));
+                         comfra_assert(m);
+                         header->array = m;
+                         for (i = header->idx; i < index; i++) {
+-                            m[i] = DUP_WITH_POOL("", event->pool);
++                            m[i] = DUP_WITH_POOL("", header->pool);
+                         }
+-                        m[index] = DUP_WITH_POOL(data, event->pool);
++                        m[index] = DUP_WITH_POOL(data, header->pool);
+                         header->idx = index + 1;
+                         if (!fly) {
+                             exists = 1;
+@@ -1001,7 +1007,7 @@
+         int i = 0, j = 0;
+ 
+         if (header->value && !header->idx) {
+-            m = comfra_core_alloc(event->pool, sizeof(char*));
++            m = comfra_core_alloc(header->pool, sizeof(char*));
+             comfra_assert(m);
+             m[0] = header->value;
+             header->value = NULL;
+@@ -1011,16 +1017,16 @@
+         }
+ 
+         i = header->idx + 1;
+-        m = comfra_core_alloc(event->pool, sizeof(char*) * i);
++        m = comfra_core_alloc(header->pool, sizeof(char*) * i);
+         comfra_assert(m);
+ 
+         if ((stack & COMFRA_STACK_PUSH)) {
+-            m[header->idx] = data;
++            m[header->idx] = DUP_WITH_POOL(data, header->pool);
+         } else if ((stack & COMFRA_STACK_UNSHIFT)) {
+             for (j = header->idx; j > 0; j--) {
+                 m[j] = m[j - 1];
+             }
+-            m[0] = data;
++            m[0] = DUP_WITH_POOL(data, header->pool);
+         }
+ 
+         header->idx++;
+@@ -1034,7 +1040,7 @@
+ 
+         if (len) {
+             len += 8;
+-            hv = comfra_core_alloc(event->pool, len);
++            hv = comfra_core_alloc(header->pool, len);
+             comfra_assert(hv);
+             header->value = hv;
+             header->valuelen = strlen(hv) + 1;
+@@ -1051,7 +1057,7 @@
+ 
+     } else {
+         /*comfra_safe_free(header->value);*/
+-        header->value = data;
++        header->value = DUP_WITH_POOL(data, header->pool);
+         header->valuelen = strlen(data) + 1;
+     }
+ 
+@@ -1076,7 +1082,7 @@
+     }
+ 
+ end:
+-
++    apr_pool_clear(event->tmp_pool);
+     /*comfra_safe_free(real_header_name);*/
+ 
+     return COMFRA_STATUS_SUCCESS;
+@@ -1097,7 +1103,7 @@
+     }
+ 
+     tmp = data;
+-    data = DUP_WITH_POOL(tmp, event->pool);
++    data = DUP_WITH_POOL(tmp, event->tmp_pool);
+     FREE(tmp);
+ 
+     return comfra_event_base_add_header(event, stack, header_name, data);
+@@ -1118,7 +1124,7 @@
+ COMFRA_DECLARE(comfra_status_t) comfra_event_add_header_string(comfra_event_t* event, comfra_stack_t stack, const char* header_name, const char* data) {
+     if (data) {
+         return comfra_event_base_add_header(event, stack, header_name,
+-                                            (stack & COMFRA_STACK_NODUP) ? (char*)data : DUP_WITH_POOL(data, event->pool));
++                                            (stack & COMFRA_STACK_NODUP) ? (char*)data : DUP_WITH_POOL(data, event->tmp_pool));
+     }
+     return COMFRA_STATUS_GENERR;
+ }
+Index: src/mk
+===================================================================
+--- src/mk	(版本 355)
++++ src/mk	(版本 356)
+@@ -73,12 +73,12 @@
+ ./bootstrap.sh
+ 
+ case $1 in
+-	AIX)    CFLAGS="-qlanglvl=extc89 -qcpluscmt" ./configure;;
++	AIX)    CFLAGS="-qlanglvl=extc89 -qcpluscmt -DCOMFRA_BIG_ENDIAN" ./configure;;
+ 	AIX64)  export OBJECT_MODE=64 
+-					CFLAGS="-qlanglvl=extc89 -qcpluscmt" ./configure;;	
+-	AIX53)  CFLAGS="-qlanglvl=extc89 -qcpluscmt" ./configure;;	
++					CFLAGS="-qlanglvl=extc89 -qcpluscmt -DCOMFRA_BIG_ENDIAN" ./configure;;	
++	AIX53)  CFLAGS="-qlanglvl=extc89 -qcpluscmt -DCOMFRA_BIG_ENDIAN" ./configure;;	
+ 	AIX53_64) export OBJECT_MODE=64
+-	          CFLAGS="-qlanglvl=extc89 -qcpluscmt" ./configure;;
++	          CFLAGS="-qlanglvl=extc89 -qcpluscmt -DCOMFRA_BIG_ENDIAN" ./configure;;
+ 	
+ 	LINUX64|LINUX64_SPINLOCK)  ./configure;;
+ 	LINUX)  ./configure;;
+
+Index: src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c
+===================================================================
+--- src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c	(版本 358)
++++ src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c	(版本 359)
+@@ -133,7 +133,7 @@
+                               "catch a client close event[%p][%s]\n", (void*)handle, uv_strerror(uv_err));
+         } else {
+             /*服务端断开异常链接*/
+-            comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT,
++            comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_WARNING,
+                               "[%s]shutdown the exception connection[%p][%s]\n",
+                               comfra_core_session_get_uuid(cf_handle->session), (void*)handle, uv_strerror(uv_err));
+             /*req= (uv_shutdown_t *)apr_pcalloc(comfra_core_session_get_pool(cf_handle->session), sizeof(uv_shutdown_t));*/
+@@ -146,7 +146,7 @@
+ 
+     if (nread == 0) {
+         /* Everything OK, but nothing read. */
+-        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT,
++        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_WARNING,
+                           "read nothing from connection[%p]\n", (void*)handle);
+         if(buf.base) {
+             apr_bucket_free(buf.base);
+@@ -199,7 +199,9 @@
+ 
+     if(status != 0) {
+         comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session),
+-                          COMFRA_LOG_ERROR, "CHANNEL OUT : failed to connect.\n");
++                          COMFRA_LOG_ERROR, "CHANNEL OUT : failed to connect.[%s:%s]\n",
++                          comfra_channel_get_variable_dup(session->channel, COMFRA_DESTINATION_IP_VARIABLE, COMFRA_FALSE, -1),
++                          comfra_channel_get_variable_dup(session->channel, COMFRA_DESTINATION_PORT_VARIABLE, COMFRA_FALSE, -1));
+         cf_run_handle_connect_cb(session, COMFRA_STATUS_FALSE);
+     } else {
+         cf_run_handle_connect_cb(session, COMFRA_STATUS_SUCCESS);
+@@ -233,7 +235,7 @@
+     char port[10];
+ 
+     if(0 != status) {
+-        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT,
++        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_WARNING,
+                           "invalid socket to accept[%d]\n", status);
+         return;
+     }
+@@ -345,8 +347,8 @@
+     cf_event_handle* handle = (cf_event_handle*)comfra_core_session_get_private(session);
+     apr_pool_t* pool = comfra_core_session_get_pool(session);
+     uv_connect_t* connect_req = (uv_connect_t*)comfra_core_alloc(pool, sizeof(uv_connect_t));
+-    const char* ip = comfra_channel_get_variable(channel, COMFRA_DESTINATION_IP_VARIABLE);
+-    const char* port = comfra_channel_get_variable(channel, COMFRA_DESTINATION_PORT_VARIABLE);
++    const char* ip = comfra_channel_get_variable_dup(channel, COMFRA_DESTINATION_IP_VARIABLE, COMFRA_FALSE, -1);
++    const char* port = comfra_channel_get_variable_dup(channel, COMFRA_DESTINATION_PORT_VARIABLE, COMFRA_FALSE, -1);
+ 
+     r = uv_tcp_init(loop, (uv_tcp_t*)handle);
+     comfra_assert(r == 0);
+@@ -577,7 +579,7 @@
+     uv_run(loop);
+ 
+     loop = NULL;
+-    comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT, "exit libuv_runtime.\n");
++    comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_DEBUG, "exit libuv_runtime.\n");
+     // Tell the switch to stop calling this runtime loop
+     return COMFRA_STATUS_TERM;
+ }
+Index: src/src/mod/monitor/mod_monitor_bson/mod_monitor_bson.c
+===================================================================
+--- src/src/mod/monitor/mod_monitor_bson/mod_monitor_bson.c	(版本 358)
++++ src/src/mod/monitor/mod_monitor_bson/mod_monitor_bson.c	(版本 359)
+@@ -98,7 +98,7 @@
+         comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ERROR, "uv_run error[%d]\n", r);
+         return COMFRA_STATUS_SOCKERR;
+     } else {
+-        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT, "exit libuv_runtime.\n");
++        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_DEBUG, "exit libuv_runtime.\n");
+     }
+ 
+     return COMFRA_STATUS_TERM;
+@@ -220,7 +220,7 @@
+                               "catch a client close event[%p][%s]\n", handle, uv_strerror(uv_err));
+         } else {
+             /*服务端断开异常链接*/
+-            comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT, "shutdown the exception connection[%p][%s]\n",
++            comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_WARNING, "shutdown the exception connection[%p][%s]\n",
+                               handle, uv_strerror(uv_err));
+         }
+ 
+@@ -230,7 +230,7 @@
+ 
+     if (nread == 0) {
+         /* Everything OK, but nothing read. */
+-        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_ALERT, "read nothing from connection[%p]\n", handle);
++        comfra_log_printf(COMFRA_CHANNEL_LOG, COMFRA_LOG_WARNING, "read nothing from connection[%p]\n", handle);
+         if(buf.base) {
+             apr_bucket_free(buf.base);
+         }
+Index: src/src/comfra_monitor.c
+===================================================================
+--- src/src/comfra_monitor.c	(版本 358)
++++ src/src/comfra_monitor.c	(版本 359)
+@@ -56,7 +56,7 @@
+ #else
+     comfra_copy_string(build_info->productIsDebug, "None", sizeof(build_info->productIsDebug));
+ #endif
+-    build_info->productBits = 32;
++    build_info->productBits = sizeof(int*) * 8;
+     build_info->maxBsonObjectSize = COMFRA_BSON_INT32_MAX;
+ }
+ 
+Index: src/pack_tps1
+===================================================================
+--- src/pack_tps1	(版本 358)
++++ src/pack_tps1	(版本 359)
+@@ -77,7 +77,7 @@
+ cp $conf_dir/rule_profiles/internal.xml                  ./$dest_dir/conf/rule_profiles
+ cp $conf_dir/rule_profiles/internal/*.xml                ./$dest_dir/conf/rule_profiles/internal
+ 
+-cp ../doc/TPS0.2/4_manual/TPS0.2管理手册.pdf   ./$dest_dir/doc/TPS1.0管理手册.pdf
++cp ../doc/TPS0.2/4_manual/TongProxyServer1.0使用手册.doc   ./$dest_dir/doc/TongProxyServer1.0使用手册.doc
+ 
+ echo "cp process is over .........."
+ 
+Index: src/pack_tps1.bat
+===================================================================
+--- src/pack_tps1.bat	(版本 358)
++++ src/pack_tps1.bat	(版本 359)
+@@ -69,6 +69,6 @@
+ copy "moni\tlq\setp"                 "TPS1.0\"
+ copy "moni\tlq\tps_ver.dat"          "TPS1.0\"
+ 
+-copy "..\doc\TPS0.2\4_manual\TPS0.2管理手册.pdf"  "TPS1.0\doc\"    
++copy "..\doc\TPS0.2\4_manual\TongProxyServer1.0使用手册.doc"  "TPS1.0\doc\TongProxyServer1.0使用手册.doc"    
+ 
+ if  "%1" neq "1" pause
+\ 文件没有以空行结尾
+
+Index: src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c
+===================================================================
+--- src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c	(版本 361)
++++ src/src/mod/event_handlers/mod_event_libuv/mod_event_libuv.c	(版本 362)
+@@ -139,6 +139,8 @@
+             /*req= (uv_shutdown_t *)apr_pcalloc(comfra_core_session_get_pool(cf_handle->session), sizeof(uv_shutdown_t));*/
+         }
+ 
++        uv_close((uv_handle_t*)handle, on_connection_close);
++
+         cf_run_handle_close(cf_handle->session);
+ 
+         return;
+@@ -364,7 +366,12 @@
+                        (uv_tcp_t*)handle,
+                        uv_ip4_addr(ip, atoi(port)),
+                        connect_cb);
+-    comfra_assert(r == 0);
++    if (r != 0) {
++        comfra_log_printf(COMFRA_CHANNEL_SESSION_LOG(session), COMFRA_LOG_ERROR,
++                          "The destination_ip[%s] or the destination_port[%s] is error.\n", ip, port);
++        cf_run_handle_close(session);
++        return COMFRA_STATUS_FALSE;
++    }
+     return COMFRA_STATUS_SUCCESS;
+ }
+ 
+Index: src/moni/tlq/process/tmcinit.c
+===================================================================
+--- src/moni/tlq/process/tmcinit.c	(版本 361)
++++ src/moni/tlq/process/tmcinit.c	(版本 362)
+@@ -57,7 +57,7 @@
+ 
+ CMD_INFO cmd_info = { -1, 1, "0.0.0.0", 20240};
+ 
+-char start_info[] = "\n*****************************************\n************** TLRT start ****************\n*****************************************";
++char start_info[] = "\n*****************************************\n************** tong proxy server start ****************\n*****************************************";
+ 
+ int Usage(char* av) {
+     fprintf(stderr, "\nUsage:\n");
+@@ -148,7 +148,7 @@
+     int		chr;
+     int		ret;
+ 
+-    printf("TLRT is running now, stop it (Y/N)?");
++    printf("tong proxy server is running now, stop it (Y/N)?");
+     chr = getchar();
+     if ((chr == 'y') || (chr == 'Y')) {
+         ret = 0;
+

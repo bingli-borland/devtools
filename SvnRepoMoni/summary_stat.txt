@@ -1,0 +1,234 @@
+Sun Jun  9 17:19:18 2013
+yanjie, 0, 0, 0, 0
+
+layong, 0, 0, 0, 0
+
+liurl, 1347, 1027, 114, 35
+
+chengwb, 0, 5661, 0, 5692
+
+Sun Jun  9 17:21:51 2013
+yanjie, 0, 0, 0, 0
+
+layong, 0, 0, 0, 0
+
+liurl, 1347, 1027, 114, 35
+
+chengwb, 0, 5661, 0, 5692
+
+Sun Jun  9 18:43:23 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 377, 0, 219, 0
+
+liurl, 1446, 1027, 127, 35
+
+chengwb, 0, 8925, 0, 5812
+
+yanjie, 0, 0, 0, 0
+
+yanym, 6874, 0, 6800, 0
+
+liyin1, 551, 0, 579, 0
+
+yanjie, 0, 0, 0, 0
+
+Sun Jun  9 22:26:52 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 377, 0, 219, 0
+
+liurl, 1446, 1027, 127, 35
+
+chengwb, 0, 8925, 0, 5812
+
+yanjie, 0, 0, 0, 0
+
+yanym, 6874, 0, 6800, 0
+
+liyin1, 995, 0, 749, 0
+
+yanjie, 0, 0, 0, 0
+
+Sun Jun  9 22:42:22 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 377, 0, 219, 0
+
+liurl, 1446, 1027, 127, 35
+
+chengwb, 0, 8925, 0, 5812
+
+yanjie, 0, 0, 0, 0
+
+yanym, 6874, 0, 6800, 0
+
+liyin1, 995, 0, 749, 0
+
+yanjie, 0, 0, 0, 0
+
+Sun Jun  9 23:16:46 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 377, 0, 219, 0
+
+liurl, 1446, 1027, 127, 35
+
+chengwb, 0, 8925, 0, 5812
+
+yanjie, 0, 0, 0, 0
+
+yanym, 6874, 0, 6800, 0
+
+liyin1, 995, 0, 749, 0
+
+yanjie, 0, 0, 0, 0
+
+chengcc, 1552, 2414, 926, 711
+
+luohq, 340, 3865, 140, 3980
+
+jianghuan, 0, 0, 0, 0
+
+tangjian, 0, 0, 0, 0
+
+sunlei, 0, 0, 0, 0
+
+huangqian, 318928, 0, 318911, 0
+
+jianghuan, 0, 0, 0, 0
+
+hedb, 3186, 0, 180, 0
+
+yaoli, 0, 0, 0, 0
+
+Sun Jun  9 23:24:22 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 377, 0, 219, 0
+
+liurl, 1446, 1027, 127, 35
+
+chengwb, 0, 8925, 0, 5812
+
+yanjie, 0, 0, 0, 0
+
+yanym, 6874, 0, 6800, 0
+
+liyin1, 995, 0, 749, 0
+
+yanjie, 0, 0, 0, 0
+
+chengcc, 1552, 2414, 926, 711
+
+luohq, 340, 3865, 140, 3980
+
+jianghuan, 0, 0, 0, 0
+
+tanjian, 3040, 0, 2061, 0
+
+yaoli, 1043, 0, 1158, 0
+
+huangqian, 318928, 0, 318911, 0
+
+jianghuan, 0, 0, 0, 0
+
+hedb, 3186, 0, 180, 0
+
+sunlei, 857, 0, 848, 0
+
+Fri Jun 14 15:47:30 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 166, 0, 123, 0
+
+liurl, 1135, 0, 54, 0
+
+chengwb, 0, 273, 0, 726
+
+yanjie, 0, 0, 0, 0
+
+yanym, 605, 0, 438, 0
+
+liyin1, 1096, 0, 417, 0
+
+yanjie, 0, 0, 0, 0
+
+chengcc, 587, 0, 63, 2
+
+luohq, 72, 19, 32, 21
+
+jianghuan, 535, 0, 147, 0
+
+tanjian, 0, 0, 0, 0
+
+yaoli, 0, 0, 9, 0
+
+huangqian, 93, 0, 68, 0
+
+jianghuan, 0, 0, 0, 0
+
+hedb, 7067, 0, 5623, 0
+
+sunlei, 1260, 0, 1711, 0
+
+Mon Jun 24 14:57:01 2013
+yanjie, 0, 0, 0, 0
+
+lanyong, 126, 0, 114, 0
+
+liurl, 1563, 0, 1222, 0
+
+chengwb, 0, 0, 0, 0
+
+yanjie, 0, 0, 0, 0
+
+yanym, 282, 0, 271, 0
+
+liyin1, 514, 0, 524, 0
+
+yanjie, 0, 0, 0, 0
+
+chengcc, 130, 21, 125, 20
+
+luohq, 203, 3710, 145, 26
+
+jianghuan, 42, 0, 1, 0
+
+tanjian, 0, 0, 0, 0
+
+yaoli, 1, 0, 10, 0
+
+huangqian, 1385, 0, 28, 0
+
+jianghuan, 101, 0, 59, 0
+
+hedb, 1950, 0, 1405, 0
+
+sunlei, 36865, 0, 36740, 0
+
+Thu Jun 27 14:19:19 2013
+lanyong, 0, 0, 0, 0
+
+liurl, 24, 25, 5, 4
+
+chengwb, 0, 0, 0, 0
+
+yanym, 0, 0, 0, 0
+
+liyin1, 2337, 0, 2592, 0
+
+chengcc, 0, 0, 0, 0
+
+luohq, 1, 0, 56, 0
+
+tanjian, 27, 0, 25, 0
+
+yaoli, 0, 0, 0, 0
+
+huangqian, 0, 0, 0, 0
+
+hedb, 17, 0, 185, 0
+
+sunlei, 701, 0, 5, 0
+

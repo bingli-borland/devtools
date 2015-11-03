@@ -1,0 +1,38 @@
+Thu Jun 27 17:52:47 2013
+lanyong, 0, 0, 0, 0
+
+liurl, 0, 0, 0, 0
+
+chengwb, 0, 0, 0, 0
+
+yanym, 0, 0, 0, 0
+
+liyin1, 1, 0, 1, 0
+
+chengcc, 0, 0, 0, 0
+
+luohq, 1, 0, 56, 0
+
+tanjian, 0, 0, 0, 0
+
+yaoli, 0, 0, 0, 0
+
+huangqian, 0, 0, 0, 0
+
+hedb, 6, 0, 0, 0
+
+sunlei, 0, 0, 0, 0
+
+Thu Jun 27 17:55:08 2013
+lanyong, 0, 0, 0, 0
+liurl, 0, 0, 0, 0
+chengwb, 0, 0, 0, 0
+yanym, 0, 0, 0, 0
+liyin1, 1, 0, 1, 0
+chengcc, 0, 0, 0, 0
+luohq, 1, 0, 56, 0
+tanjian, 0, 0, 0, 0
+yaoli, 0, 0, 0, 0
+huangqian, 0, 0, 0, 0
+hedb, 6, 0, 0, 0
+sunlei, 0, 0, 0, 0

@@ -1,0 +1,1 @@
+xjc sprint-info.xsd -p com.tongtech.sprint

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="exception" type="xs:string"/>
+
+    <xs:element name="worklogdetail">
+        <xs:complexType mixed="true">
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="timespent" type="xs:double" use="optional"/>
+            <xs:attribute name="comment" type="xs:string" use="optional"/>
+            <xs:attribute name="createdate" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="taskdetail">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="worklogdetail" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="tasktype" type="xs:string" use="optional"/>
+            <xs:attribute name="taskkey" type="xs:string" use="optional"/>
+            <xs:attribute name="tasksummary" type="xs:string" use="optional"/>
+            <xs:attribute name="taskstatus" type="xs:string" use="optional"/>
+            <xs:attribute name="tasktimespent" type="xs:double" use="optional"/>
+            <xs:attribute name="tasklogtimespent" type="xs:double" use="optional"/>
+            <xs:attribute name="tasklogworkcount" type="xs:int" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="sprintdetail">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="taskdetail" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="worklogdetail" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="issuetype" type="xs:string" use="optional"/>
+            <xs:attribute name="issuekey" type="xs:string" use="optional"/>
+            <xs:attribute name="issuesummary" type="xs:string" use="optional"/>
+            <xs:attribute name="issuestatus" type="xs:string" use="optional"/>
+            <xs:attribute name="issuepoint" type="xs:string" use="optional"/>
+            <xs:attribute name="issuetimespent" type="xs:double" use="optional"/>
+            <xs:attribute name="issuelogtimespent" type="xs:double" use="optional"/>
+            <xs:attribute name="issuelogworkcount" type="xs:int" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="sprintdetails">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="sprintdetail" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="startdate" type="xs:string" use="optional"/>
+            <xs:attribute name="enddate" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="sprints">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="sprintdetails" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="startdate" type="xs:string" use="optional"/>
+            <xs:attribute name="enddate" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

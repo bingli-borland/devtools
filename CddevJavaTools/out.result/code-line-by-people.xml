@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<svnstat>
+    <peoplestats startdate="2013-08-21" enddate="2013-08-22">
+        <peoplestat name="lanyong" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="liurl" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="chengcc" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+    </peoplestats>
+    <peoplestats startdate="2013-08-21" enddate="2013-08-22">
+        <peoplestat name="lanyong" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="liurl" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="chengcc" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+    </peoplestats>
+    <peoplestats startdate="2013-08-15" enddate="2013-08-22">
+        <peoplestat name="lanyong" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="liurl" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="chengcc" commitcount="0" srcadded="83" srcdeleted="52" testadded="0" testdeleted="0"/>
+    </peoplestats>
+    <peoplestats startdate="2013-08-15" enddate="2013-08-22">
+        <peoplestat name="lanyong" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="liurl" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="chengcc" commitcount="0" srcadded="83" srcdeleted="52" testadded="0" testdeleted="0"/>
+    </peoplestats>
+    <peoplestats startdate="2013-08-15" enddate="2013-08-22">
+        <peoplestat name="lanyong" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="liurl" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="chengcc" commitcount="0" srcadded="83" srcdeleted="52" testadded="0" testdeleted="0"/>
+    </peoplestats>
+    <peoplestats startdate="2013-08-15" enddate="2013-08-22">
+        <peoplestat name="lanyong" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="liurl" commitcount="0" srcadded="0" srcdeleted="0" testadded="0" testdeleted="0"/>
+        <peoplestat name="chengcc" commitcount="0" srcadded="83" srcdeleted="52" testadded="0" testdeleted="0"/>
+    </peoplestats>
+</svnstat>

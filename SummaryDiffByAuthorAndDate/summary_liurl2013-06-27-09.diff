@@ -1,0 +1,91 @@
+Index: lib/linux_32/libgtest.so.0.0.0
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: lib/linux_32/libgtest.so.0.0.0
+===================================================================
+--- lib/linux_32/libgtest.so.0.0.0	(版本 378)
++++ lib/linux_32/libgtest.so.0.0.0	(版本 379)
+
+ 属性改变: lib/linux_32/libgtest.so.0.0.0
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: lib/linux_32/libgtest.so.0
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: lib/linux_32/libgtest.so.0
+===================================================================
+--- lib/linux_32/libgtest.so.0	(版本 378)
++++ lib/linux_32/libgtest.so.0	(版本 379)
+
+ 属性改变: lib/linux_32/libgtest.so.0
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: lib/linux_32/libgtest.so
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: lib/linux_32/libgtest.so
+===================================================================
+--- lib/linux_32/libgtest.so	(版本 378)
++++ lib/linux_32/libgtest.so	(版本 379)
+
+ 属性改变: lib/linux_32/libgtest.so
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: lib/linux_64/libgtest.so.0.0.0
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: lib/linux_64/libgtest.so.0.0.0
+===================================================================
+--- lib/linux_64/libgtest.so.0.0.0	(版本 378)
++++ lib/linux_64/libgtest.so.0.0.0	(版本 379)
+
+ 属性改变: lib/linux_64/libgtest.so.0.0.0
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: lib/linux_64/libgtest.so.0
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: lib/linux_64/libgtest.so.0
+===================================================================
+--- lib/linux_64/libgtest.so.0	(版本 378)
++++ lib/linux_64/libgtest.so.0	(版本 379)
+
+ 属性改变: lib/linux_64/libgtest.so.0
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: lib/linux_64/libgtest.so
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: lib/linux_64/libgtest.so
+===================================================================
+--- lib/linux_64/libgtest.so	(版本 378)
++++ lib/linux_64/libgtest.so	(版本 379)
+
+ 属性改变: lib/linux_64/libgtest.so
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+

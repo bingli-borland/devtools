@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="commitdetail">
+        <xs:complexType mixed="true">
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="comment" type="xs:string" use="optional"/>
+            <xs:attribute name="createdate" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="peoplestat">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="commitdetail" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="commitcount" type="xs:int" use="optional"/>
+            <xs:attribute name="srcadded" type="xs:int" use="optional"/>
+            <xs:attribute name="srcdeleted" type="xs:int" use="optional"/>
+            <xs:attribute name="testadded" type="xs:int" use="optional"/>
+            <xs:attribute name="testdeleted" type="xs:int" use="optional"/>
+            <xs:attribute name="totalcommitcount" type="xs:int" use="optional"/>
+            <xs:attribute name="totalsrcadded" type="xs:int" use="optional"/>
+            <xs:attribute name="totalsrcdeleted" type="xs:int" use="optional"/>
+            <xs:attribute name="totaltestadded" type="xs:int" use="optional"/>
+            <xs:attribute name="totaltestdeleted" type="xs:int" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="peoplestats">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="peoplestat" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="startdate" type="xs:string" use="optional"/>
+            <xs:attribute name="enddate" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="svnstat">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="peoplestats" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

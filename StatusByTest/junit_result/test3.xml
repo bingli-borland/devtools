@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="ph-suse" name="test.jms.cluster.TestClusterJNDI" tests="9" time="0.389" timestamp="2012-06-27T02:27:29">
+  <properties>
+    <property name="file.encoding.pkg" value="sun.io" />
+    <property name="java.home" value="/usr/java/jdk1.6.0_21/jre" />
+    <property name="obj.dir.primary" value="build/primary" />
+    <property name="env.TLQHOMEDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1" />
+    <property name="env.NNTPSERVER" value="news" />
+    <property name="env.LS_COLORS" value="no=00:fi=00:di=01;34:ln=00;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=41;33;01:ex=00;32:*.cmd=00;32:*.exe=01;32:*.com=01;32:*.bat=01;32:*.btm=01;32:*.dll=01;32:*.tar=00;31:*.tbz=00;31:*.tgz=00;31:*.rpm=00;31:*.deb=00;31:*.arj=00;31:*.taz=00;31:*.lzh=00;31:*.lzma=00;31:*.zip=00;31:*.zoo=00;31:*.z=00;31:*.Z=00;31:*.gz=00;31:*.bz2=00;31:*.tb2=00;31:*.tz2=00;31:*.tbz2=00;31:*.avi=01;35:*.bmp=01;35:*.fli=01;35:*.gif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mng=01;35:*.mov=01;35:*.mpg=01;35:*.pcx=01;35:*.pbm=01;35:*.pgm=01;35:*.png=01;35:*.ppm=01;35:*.tga=01;35:*.tif=01;35:*.xbm=01;35:*.xpm=01;35:*.dl=01;35:*.gl=01;35:*.wmv=01;35:*.aiff=00;32:*.au=00;32:*.mid=00;32:*.mp3=00;32:*.ogg=00;32:*.voc=00;32:*.wav=00;32:" />
+    <property name="env.SSH_TTY" value="/dev/pts/13" />
+    <property name="debug" value="on" />
+    <property name="report.dir.stress.remote.html" value="out.result/stress/remote/html" />
+    <property name="env.TLQCONFDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/etc" />
+    <property name="env.ENV" value="/etc/bash.bashrc" />
+    <property name="java.endorsed.dirs" value="/usr/java/jdk1.6.0_21/jre/lib/endorsed" />
+    <property name="env.LOGNAME" value="liuhf" />
+    <property name="env.TLQRCVFILESDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/rcvfiles" />
+    <property name="env.G_FILENAME_ENCODING" value="@locale,UTF-8,GB2312,GB18030,GBK,ISO-8859-1" />
+    <property name="src.dir" value="src" />
+    <property name="legal.dir" value="legal" />
+    <property name="obj.dir" value="build" />
+    <property name="sun.os.patch.level" value="unknown" />
+    <property name="java.vendor.url" value="http://java.sun.com/" />
+    <property name="env.QT_HOME_DIR" value="/usr/share/desktop-data" />
+    <property name="report.dir.primary.remote.html" value="out.result/primary/remote/html" />
+    <property name="env.G_BROKEN_FILENAMES" value="1" />
+    <property name="java.version" value="1.6.0_21" />
+    <property name="env.INFODIR" value="/usr/local/info:/usr/share/info:/usr/info" />
+    <property name="env.HOSTTYPE" value="x86_64" />
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi" />
+    <property name="env.SSH_CLIENT" value="10.10.20.39 2032 22" />
+    <property name="env.LESS_ADVANCED_PREPROCESSOR" value="no" />
+    <property name="ant.project.invoked-targets" value="daily.build" />
+    <property name="env.XDG_DATA_DIRS" value="/usr/share:/etc/opt/kde3/share:/opt/kde3/share" />
+    <property name="user.name" value="liuhf" />
+    <property name="env.LANG" value="zh_CN.UTF-8" />
+    <property name="env.CVS_RSH" value="ssh" />
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
+    <property name="sun.jnu.encoding" value="UTF-8" />
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
+    <property name="env.MINICOM" value="-c on" />
+    <property name="env.SSH_CONNECTION" value="10.10.20.39 2032 10.10.22.231 22" />
+    <property name="optimize" value="off" />
+    <property name="java.specification.name" value="Java Platform API Specification" />
+    <property name="obj.dir.stress" value="build/stress" />
+    <property name="user.timezone" value="" />
+    <property name="env.LESSOPEN" value="lessopen.sh %s" />
+    <property name="env.MACHTYPE" value="x86_64-suse-linux" />
+    <property name="path.separator" value=":" />
+    <property name="file.encoding" value="UTF-8" />
+    <property name="env.WINDOWMANAGER" value="/usr/bin/gnome" />
+    <property name="ant.project.default-target" value="help" />
+    <property name="env.HOME" value="/home/liuhf" />
+    <property name="env.MANPATH" value="/usr/local/man:/usr/local/share/man:/usr/share/man" />
+    <property name="report.dir.stress.local.html" value="out.result/stress/local/html" />
+    <property name="report.dir.primary.http.html" value="out.result/primary/http/html" />
+    <property name="framework.dir" value="framework" />
+    <property name="ant.file" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/build.xml" />
+    <property name="env.PROFILEREAD" value="true" />
+    <property name="env.WRAPPER_BITS" value="32" />
+    <property name="env.HOSTNAME" value="ph-suse" />
+    <property name="primary.dir" value="primary" />
+    <property name="java.io.tmpdir" value="/tmp" />
+    <property name="user.language" value="zh" />
+    <property name="report.dir.stress.remote.xml" value="out.result/stress/remote/xml" />
+    <property name="report.dir.stress.http.xml" value="out.result/stress/http/xml" />
+    <property name="line.separator" value="&#xa;" />
+    <property name="env.WRAPPER_FILE_SEPARATOR" value="/" />
+    <property name="ant.file.type" value="file" />
+    <property name="verbose" value="off" />
+    <property name="env.HISTSIZE" value="1000" />
+    <property name="report.dir.stress.longlocal.html" value="out.result/stress/longlocal/html" />
+    <property name="report.dir.stress.longlocal.xml" value="out.result/stress/longlocal/xml" />
+    <property name="report.dir" value="out.result" />
+    <property name="java.vm.info" value="mixed mode" />
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
+    <property name="env.WRAPPER_OS" value="linux" />
+    <property name="env.COLORTERM" value="1" />
+    <property name="report.dir.stress.longremote.xml" value="out.result/stress/longremote/xml" />
+    <property name="env.TLQSNDFILESDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/sndfiles" />
+    <property name="report.dir.primary.remote.xml" value="out.result/primary/remote/xml" />
+    <property name="env.TLQLOGDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/log" />
+    <property name="env.XNLSPATH" value="/usr/share/X11/nls" />
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob" />
+    <property name="clover.jar" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmsbroker/client/extlib/clover.jar" />
+    <property name="report.dir.primary.local.html" value="out.result/primary/local/html" />
+    <property name="ant.version" value="Apache Ant(TM) version 1.8.4 compiled on May 22 2012" />
+    <property name="exist.cluster" value="true" />
+    <property name="env.MAN_KEEP_FORMATTING" value="yes" />
+    <property name="env.OSTYPE" value="linux" />
+    <property name="report.dir.stress.http.html" value="out.result/stress/http/html" />
+    <property name="os.name" value="Linux" />
+    <property name="java.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="env.TERM" value="xterm" />
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM" />
+    <property name="unix" value="true" />
+    <property name="report.dir.primary.local.xml" value="out.result/primary/local/xml" />
+    <property name="java.library.path" value="/usr/java/jdk1.6.0_21/jre/lib/amd64/server:/usr/java/jdk1.6.0_21/jre/lib/amd64:/usr/java/jdk1.6.0_21/jre/../lib/amd64:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/lib::/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib" />
+    <property name="env.PATH" value="/usr/java/jdk1.6.0_21/bin:/usr/java/jdk1.6.0_21/bin:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/bin:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/samples/bin:.:/home/liuhf/tlq/apache-ant-1.8.1/bin:/usr/java/jdk1.6.0_21/bin:MAVEN_HOME/bin:/home/liuhf/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/X11R6/bin:/usr/games:/usr/lib/mit/bin:/usr/lib/mit/sbin:/opt/dell/srvadmin/bin" />
+    <property name="env.TLQMSGDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/msg" />
+    <property name="env.LESSCLOSE" value="lessclose.sh %s %s" />
+    <property name="ant.java.version" value="1.6" />
+    <property name="env.INFOPATH" value="/usr/local/info:/usr/share/info:/usr/info" />
+    <property name="env.FROM_HEADER" value="" />
+    <property name="basedir" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest" />
+    <property name="java.class.version" value="50.0" />
+    <property name="env.SHLVL" value="2" />
+    <property name="env.LD_LIBRARY_PATH" value="/usr/java/jdk1.6.0_21/jre/lib/amd64/server:/usr/java/jdk1.6.0_21/jre/lib/amd64:/usr/java/jdk1.6.0_21/jre/../lib/amd64:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/lib:" />
+    <property name="ant.home" value="/home/liuhf/tlq/apache-ant-1.8.1" />
+    <property name="resource.dir" value="resources" />
+    <property name="report.dir.primary.http.xml" value="out.result/primary/http/xml" />
+    <property name="jvmargs" value="off" />
+    <property name="sun.boot.library.path" value="/usr/java/jdk1.6.0_21/jre/lib/amd64" />
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Server Compiler" />
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment" />
+    <property name="report.dir.stress.longremote.html" value="out.result/stress/longremote/html" />
+    <property name="env.USER" value="liuhf" />
+    <property name="env.WRAPPER_PATH_SEPARATOR" value=":" />
+    <property name="env.XKEYSYMDB" value="/usr/share/X11/XKeysymDB" />
+    <property name="report.dir.stress.local.xml" value="out.result/stress/local/xml" />
+    <property name="env.LESSKEY" value="/etc/lesskey.bin" />
+    <property name="test.type" value="remote" />
+    <property name="env.LESS" value="-M -I" />
+    <property name="stress.dir" value="stress" />
+    <property name="java.vm.specification.version" value="1.0" />
+    <property name="env.NLSPATH" value="/usr/dt/lib/nls/msg/%L/%N.cat" />
+    <property name="env.LS_OPTIONS" value="-N --color=tty -T 0" />
+    <property name="sun.cpu.isalist" value="" />
+    <property name="java.ext.dirs" value="/usr/java/jdk1.6.0_21/jre/lib/ext:/usr/java/packages/lib/ext" />
+    <property name="os.version" value="2.6.27.19-5-default" />
+    <property name="env.HOST" value="ph-suse" />
+    <property name="user.home" value="/home/liuhf" />
+    <property name="appserver.dir" value="appserver" />
+    <property name="java.vm.vendor" value="Sun Microsystems Inc." />
+    <property name="env.JAVA_HOME" value="/usr/java/jdk1.6.0_21" />
+    <property name="env.INPUTRC" value="/home/liuhf/.inputrc" />
+    <property name="user.dir" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest" />
+    <property name="env.CSHEDIT" value="emacs" />
+    <property name="env.TLQLICENSEDIR" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1" />
+    <property name="env.XFILESEARCHPATH" value="/usr/dt/app-defaults/%L/Dt" />
+    <property name="env.MAIL" value="/var/mail/liuhf" />
+    <property name="build.compiler" value="modern" />
+    <property name="env.PWD" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest" />
+    <property name="sun.cpu.endian" value="little" />
+    <property name="env.PAGER" value="less" />
+    <property name="env.PYTHONSTARTUP" value="/etc/pythonstart" />
+    <property name="deprecation" value="off" />
+    <property name="java.vm.version" value="17.0-b16" />
+    <property name="java.class.path" value="/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/config/jms:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/build/framework:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/TongJMS.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/commons-cli-1.2.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/commons-io-1.4.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/concurrent-1.3.4.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/derby.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/derbyclient.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/derbynet.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/derbytools.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/j2ee14.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/jakarta-oro-2.0.8.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/junit-4.9b3.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/junit-dep-4.9b3.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/lib/netty-3.2.4.Final.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmsbroker/client/extlib/clover.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/build/primary:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/atomikos-util.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-api.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-essentials-all.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-hibernate2.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-hibernate3.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-jdbc-deprecated.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-jdbc.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-jms-deprecated.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-jms.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions-jta.jar:/home/liuhf/bamboo-agent-home/xml-data/build-dir/JMS-JMST-JOB1/jmstest/primary/atomikos/dist/transactions.jar:/home/liuhf/tlq/apache-ant-1.8.1/lib/ant-launcher.jar:/home/liuhf/tlq/apache-ant-1.8.1/lib/ant.jar:/home/liuhf/tlq/apache-ant-1.8.1/lib/ant-junit.jar:/home/liuhf/tlq/apache-ant-1.8.1/lib/ant-junit4.jar" />
+    <property name="output.clover" value="out.result/clover_html" />
+    <property name="env.XCURSOR_THEME" value="DMZ" />
+    <property name="ant.library.dir" value="/home/liuhf/tlq/apache-ant-1.8.1/lib" />
+    <property name="os.arch" value="amd64" />
+    <property name="exception.dir" value="exception" />
+    <property name="sun.java.launcher" value="SUN_STANDARD" />
+    <property name="ant.core.lib" value="/home/liuhf/tlq/apache-ant-1.8.1/lib/ant.jar" />
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="file.separator" value="/" />
+    <property name="java.runtime.version" value="1.6.0_21-b06" />
+    <property name="env.WRAPPER_ARCH" value="x86" />
+    <property name="sun.boot.class.path" value="/usr/java/jdk1.6.0_21/jre/lib/resources.jar:/usr/java/jdk1.6.0_21/jre/lib/rt.jar:/usr/java/jdk1.6.0_21/jre/lib/sunrsasign.jar:/usr/java/jdk1.6.0_21/jre/lib/jsse.jar:/usr/java/jdk1.6.0_21/jre/lib/jce.jar:/usr/java/jdk1.6.0_21/jre/lib/charsets.jar:/usr/java/jdk1.6.0_21/jre/classes" />
+    <property name="env.XDG_CONFIG_DIRS" value="/etc/xdg" />
+    <property name="env.CPU" value="x86_64" />
+    <property name="nowarn" value="off" />
+    <property name="user.country" value="CN" />
+    <property name="env.ANT_HOME" value="/home/liuhf/tlq/apache-ant-1.8.1" />
+    <property name="env.MORE" value="-sl" />
+    <property name="env.SHELL" value="/bin/bash" />
+    <property name="java.vendor" value="Sun Microsystems Inc." />
+    <property name="java.specification.version" value="1.6" />
+    <property name="sun.arch.data.model" value="64" />
+  </properties>
+  <testcase classname="test.jms.cluster.TestClusterJNDI" name="testJndiClusterQueue" time="0.249" />
+  <testcase classname="test.jms.conform.connection.ConnectionTest" name="testStartStatus" time="0.519">
+    <error type="java.lang.NullPointerException">java.lang.NullPointerException
+	at test.jms.conform.connection.ConnectionTest.testStartStatus(ConnectionTest.java:27)
+</error>
+  </testcase>
+  <testcase classname="test.jms.conform.connection.ConnectionTest" name="testAcknowledge" time="0.029">
+    <failure type="java.lang.NullPointerException">java.lang.NullPointerException
+	at test.jms.conform.connection.ConnectionTest.testAcknowledge(ConnectionTest.java:80)
+</failure>  
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,93 @@
+Index: trunk/server/src/mod/monitor/mod_monitor_bson/mod_monitor_bson.c
+===================================================================
+--- trunk/server/src/mod/monitor/mod_monitor_bson/mod_monitor_bson.c	(版本 301)
++++ trunk/server/src/mod/monitor/mod_monitor_bson/mod_monitor_bson.c	(版本 302)
+@@ -267,6 +267,7 @@
+                 char* val = (char*) comfra_xml_attr_soft(param, "value");
+ 
+                 if (!strcmp(var, "listen-ip")) {
++                    memset(&module_cfg, 0, sizeof(module_cfg));
+                     set_cfg_ip(val);
+                 } else if (!strcmp(var, "listen-port")) {
+                     module_cfg.port = (uint16_t) atoi(val);
+Index: trunk/server/Tongcomfra.2010.sln
+===================================================================
+--- trunk/server/Tongcomfra.2010.sln	(版本 301)
++++ trunk/server/Tongcomfra.2010.sln	(版本 302)
+@@ -119,10 +119,6 @@
+ EndProject
+ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libuv_send", "tests\performance_test\libuv_send\libuv_send.vcxproj", "{89784691-3F52-4448-9629-C4462564AA53}"
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tllm_recv", "tests\performance_test\tllm_recv\tllm_recv.vcxproj", "{23C0A27E-F00A-4AE2-B702-82994BFB72A9}"
+-EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tllm_send", "tests\performance_test\tllm_send\tllm_send.vcxproj", "{84989B65-A7AD-419A-B202-872A82CCCAF3}"
+-EndProject
+ Global
+ 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+ 		All|Win32 = All|Win32
+@@ -1287,56 +1283,6 @@
+ 		{89784691-3F52-4448-9629-C4462564AA53}.WithOpenPGM|x64.ActiveCfg = Release|Win32
+ 		{89784691-3F52-4448-9629-C4462564AA53}.WithOpenPGM|x64 Setup.ActiveCfg = Release|Win32
+ 		{89784691-3F52-4448-9629-C4462564AA53}.WithOpenPGM|x86 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.All|Win32.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.All|Win32.Build.0 = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.All|x64.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.All|x64 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.All|x86 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Debug|Win32.ActiveCfg = Debug|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Debug|Win32.Build.0 = Debug|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Debug|x64.ActiveCfg = Debug|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Debug|x64 Setup.ActiveCfg = Debug|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Debug|x86 Setup.ActiveCfg = Debug|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Release|Win32.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Release|Win32.Build.0 = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Release|x64.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Release|x64 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Release|x86 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Template|Win32.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Template|Win32.Build.0 = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Template|x64.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Template|x64 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.Template|x86 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.WithOpenPGM|Win32.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.WithOpenPGM|Win32.Build.0 = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.WithOpenPGM|x64.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.WithOpenPGM|x64 Setup.ActiveCfg = Release|Win32
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9}.WithOpenPGM|x86 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.All|Win32.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.All|Win32.Build.0 = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.All|x64.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.All|x64 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.All|x86 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Debug|Win32.ActiveCfg = Debug|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Debug|Win32.Build.0 = Debug|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Debug|x64.ActiveCfg = Debug|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Debug|x64 Setup.ActiveCfg = Debug|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Debug|x86 Setup.ActiveCfg = Debug|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Release|Win32.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Release|Win32.Build.0 = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Release|x64.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Release|x64 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Release|x86 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Template|Win32.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Template|Win32.Build.0 = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Template|x64.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Template|x64 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.Template|x86 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.WithOpenPGM|Win32.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.WithOpenPGM|Win32.Build.0 = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.WithOpenPGM|x64.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.WithOpenPGM|x64 Setup.ActiveCfg = Release|Win32
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3}.WithOpenPGM|x86 Setup.ActiveCfg = Release|Win32
+ 	EndGlobalSection
+ 	GlobalSection(SolutionProperties) = preSolution
+ 		HideSolutionNode = FALSE
+@@ -1386,7 +1332,5 @@
+ 		{8C3F6505-2B5B-4AA1-A98D-181E16759BE7} = {4A4DEDB8-D6A8-44A8-B835-9472AFFDE7F8}
+ 		{D21D1956-C6A5-42FC-942B-DB6F11C7AAAE} = {A9D5DBF6-B25C-44A4-9DFD-665B09B36BE0}
+ 		{89784691-3F52-4448-9629-C4462564AA53} = {A9D5DBF6-B25C-44A4-9DFD-665B09B36BE0}
+-		{23C0A27E-F00A-4AE2-B702-82994BFB72A9} = {A9D5DBF6-B25C-44A4-9DFD-665B09B36BE0}
+-		{84989B65-A7AD-419A-B202-872A82CCCAF3} = {A9D5DBF6-B25C-44A4-9DFD-665B09B36BE0}
+ 	EndGlobalSection
+ EndGlobal
+

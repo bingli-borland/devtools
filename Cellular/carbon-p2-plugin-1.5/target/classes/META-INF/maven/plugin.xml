@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <name>Maven P2 Profile Generation Plugin</name>
+  <description></description>
+  <groupId>com.tongtech.maven</groupId>
+  <artifactId>carbon-p2-plugin</artifactId>
+  <version>1.5</version>
+  <goalPrefix>carbon-p2</goalPrefix>
+  <isolatedRealm>false</isolatedRealm>
+  <inheritedByDefault>true</inheritedByDefault>
+  <mojos>
+    <mojo>
+      <goal>p2-profile-gen</goal>
+      <description>Write environment information for the current build to file.</description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>package</phase>
+      <implementation>org.wso2.maven.p2.ProfileGenMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>artifactRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>URL of the Artifact Repository</description>
+        </parameter>
+        <parameter>
+          <name>deleteOldProfileFiles</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Flag to indicate whether to delete old profile files</description>
+        </parameter>
+        <parameter>
+          <name>destination</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Destination to which the features should be installed</description>
+        </parameter>
+        <parameter>
+          <name>features</name>
+          <type>java.util.ArrayList</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>List of features</description>
+        </parameter>
+        <parameter>
+          <name>forkedProcessTimeoutInSeconds</name>
+          <type>int</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Kill the forked test process after a certain number of seconds. If set to 0, wait forever for
+the process, never timing out.</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>metadataRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>URL of the Metadata Repository</description>
+        </parameter>
+        <parameter>
+          <name>p2Profile</name>
+          <type>org.wso2.maven.p2.P2Profile</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Equinox p2 configuration path</description>
+        </parameter>
+        <parameter>
+          <name>p2Repository</name>
+          <type>org.wso2.maven.p2.P2Repository</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Location of the p2 repository</description>
+        </parameter>
+        <parameter>
+          <name>profile</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>target profile</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>remoteRepositories</name>
+          <type>java.util.List</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <deleteOldProfileFiles implementation="boolean" default-value="true"/>
+        <forkedProcessTimeoutInSeconds implementation="int">${p2.timeout}</forkedProcessTimeoutInSeconds>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <remoteRepositories implementation="java.util.List" default-value="${project.remoteArtifactRepositories}"/>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.artifact.factory.ArtifactFactory</role>
+          <field-name>artifactFactory</field-name>
+        </requirement>
+        <requirement>
+          <role>org.eclipse.tycho.p2.facade.internal.P2ApplicationLauncher</role>
+          <field-name>launcher</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectHelper</role>
+          <field-name>projectHelper</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.resolver.ArtifactResolver</role>
+          <field-name>resolver</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>materialize-product</goal>
+      <description></description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <implementation>org.wso2.maven.p2.MaterializeProductMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>artifactRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Artifact repository name</description>
+        </parameter>
+        <parameter>
+          <name>forkedProcessTimeoutInSeconds</name>
+          <type>int</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Kill the forked test process after a certain number of seconds. If set to 0, wait forever for
+the process, never timing out.</description>
+        </parameter>
+        <parameter>
+          <name>metadataRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Metadata repository name</description>
+        </parameter>
+        <parameter>
+          <name>productConfigurationFile</name>
+          <type>java.io.File</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>The product configuration, a .product file. This file manages all aspects
+of a product definition from its constituent plug-ins to configuration
+files to branding.</description>
+        </parameter>
+        <parameter>
+          <name>profile</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>The new profile to be created during p2 Director install &amp;
+the default profile for the the application which is set in config.ini</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>targetPath</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <forkedProcessTimeoutInSeconds implementation="int">${p2.timeout}</forkedProcessTimeoutInSeconds>
+        <productConfigurationFile implementation="java.io.File">${productConfiguration}</productConfigurationFile>
+        <profile implementation="java.lang.String">${profile}</profile>
+        <project implementation="org.apache.maven.project.MavenProject">${project}</project>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.eclipse.tycho.p2.facade.internal.P2ApplicationLauncher</role>
+          <field-name>launcher</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>p2-repo-gen</goal>
+      <description>Write environment information for the current build to file.</description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>package</phase>
+      <implementation>org.wso2.maven.p2.RepositoryGenMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>archive</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>artifactRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>URL of the Artifact Repository</description>
+        </parameter>
+        <parameter>
+          <name>bundleArtifacts</name>
+          <type>java.util.ArrayList</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Source folder</description>
+        </parameter>
+        <parameter>
+          <name>categories</name>
+          <type>java.util.ArrayList</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Source folder</description>
+        </parameter>
+        <parameter>
+          <name>equinoxLauncher</name>
+          <type>org.wso2.maven.p2.EquinoxLauncher</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Equinox Launcher</description>
+        </parameter>
+        <parameter>
+          <name>featureArtifacts</name>
+          <type>java.util.ArrayList</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>Source folder</description>
+        </parameter>
+        <parameter>
+          <name>forkedProcessTimeoutInSeconds</name>
+          <type>int</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Kill the forked test process after a certain number of seconds. If set to 0, wait forever for
+the process, never timing out.</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>metadataRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>URL of the Metadata Repository</description>
+        </parameter>
+        <parameter>
+          <name>name</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Name of the repository</description>
+        </parameter>
+        <parameter>
+          <name>p2Profile</name>
+          <type>org.wso2.maven.p2.P2Profile</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Equinox p2 configuration path</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>publishArtifactRepository</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Type of Artifact (War,Jar,etc)</description>
+        </parameter>
+        <parameter>
+          <name>publishArtifacts</name>
+          <type>boolean</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>flag indicating whether the artifacts should be published to the repository. When this flag is not set,
+the actual bytes underlying the artifact will not be copied, but the repository index will be created.
+When this option is not specified, it is recommended to set the artifactRepository to be in the same location
+as the source (-source)</description>
+        </parameter>
+        <parameter>
+          <name>remoteRepositories</name>
+          <type>java.util.List</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <archive implementation="boolean" default-value="false"/>
+        <forkedProcessTimeoutInSeconds implementation="int">${p2.timeout}</forkedProcessTimeoutInSeconds>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <remoteRepositories implementation="java.util.List" default-value="${project.remoteArtifactRepositories}"/>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.artifact.factory.ArtifactFactory</role>
+          <field-name>artifactFactory</field-name>
+        </requirement>
+        <requirement>
+          <role>org.eclipse.tycho.p2.facade.internal.P2ApplicationLauncher</role>
+          <field-name>launcher</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.resolver.ArtifactResolver</role>
+          <field-name>resolver</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>p2-feature-gen</goal>
+      <description>Write environment information for the current build to file.</description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <phase>package</phase>
+      <implementation>org.wso2.maven.p2.generate.feature.FeatureGenMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>adviceFile</name>
+          <type>org.wso2.maven.p2.generate.feature.AdviceFile</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>define advice file content</description>
+        </parameter>
+        <parameter>
+          <name>bundles</name>
+          <type>java.util.ArrayList</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Collection of bundles</description>
+        </parameter>
+        <parameter>
+          <name>copyright</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>copyrite</description>
+        </parameter>
+        <parameter>
+          <name>deploymentRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>description</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>description of the feature</description>
+        </parameter>
+        <parameter>
+          <name>id</name>
+          <type>java.lang.String</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description>feature id</description>
+        </parameter>
+        <parameter>
+          <name>importBundles</name>
+          <type>java.util.ArrayList</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Collection of import bundles</description>
+        </parameter>
+        <parameter>
+          <name>importFeatures</name>
+          <type>java.util.ArrayList</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Collection of required Features</description>
+        </parameter>
+        <parameter>
+          <name>includedFeatures</name>
+          <type>java.util.ArrayList</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Collection of required Features</description>
+        </parameter>
+        <parameter>
+          <name>label</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>label of the feature</description>
+        </parameter>
+        <parameter>
+          <name>licence</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>licence</description>
+        </parameter>
+        <parameter>
+          <name>licenceUrl</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>licence url</description>
+        </parameter>
+        <parameter>
+          <name>localRepository</name>
+          <type>org.apache.maven.artifact.repository.ArtifactRepository</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>manifest</name>
+          <type>java.io.File</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>path to manifest file</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>properties</name>
+          <type>java.util.Properties</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>list of properties
+precedance over propertiesFile</description>
+        </parameter>
+        <parameter>
+          <name>propertiesFile</name>
+          <type>java.io.File</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>path to properties file</description>
+        </parameter>
+        <parameter>
+          <name>providerName</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>provider name</description>
+        </parameter>
+        <parameter>
+          <name>remoteRepositories</name>
+          <type>java.util.List</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+        <parameter>
+          <name>version</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>version</description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <copyright implementation="java.lang.String" default-value="%copyright"/>
+        <deploymentRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${project.distributionManagementArtifactRepository}"/>
+        <description implementation="java.lang.String" default-value="${project.description}"/>
+        <label implementation="java.lang.String" default-value="${project.name}"/>
+        <licence implementation="java.lang.String" default-value="%license"/>
+        <licenceUrl implementation="java.lang.String" default-value="%licenseURL"/>
+        <localRepository implementation="org.apache.maven.artifact.repository.ArtifactRepository" default-value="${localRepository}"/>
+        <project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+        <providerName implementation="java.lang.String" default-value="%providerName"/>
+        <remoteRepositories implementation="java.util.List" default-value="${project.remoteArtifactRepositories}"/>
+        <version implementation="java.lang.String" default-value="${project.version}"/>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.apache.maven.artifact.factory.ArtifactFactory</role>
+          <field-name>artifactFactory</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.metadata.ArtifactMetadataSource</role>
+          <field-name>artifactMetadataSource</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.project.MavenProjectHelper</role>
+          <field-name>projectHelper</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.artifact.resolver.ArtifactResolver</role>
+          <field-name>resolver</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+    <mojo>
+      <goal>publish-product</goal>
+      <description></description>
+      <requiresDirectInvocation>false</requiresDirectInvocation>
+      <requiresProject>true</requiresProject>
+      <requiresReports>false</requiresReports>
+      <aggregator>false</aggregator>
+      <requiresOnline>false</requiresOnline>
+      <inheritedByDefault>true</inheritedByDefault>
+      <implementation>org.wso2.maven.p2.PublishProductMojo</implementation>
+      <language>java</language>
+      <instantiationStrategy>per-lookup</instantiationStrategy>
+      <executionStrategy>once-per-session</executionStrategy>
+      <threadSafe>false</threadSafe>
+      <parameters>
+        <parameter>
+          <name>artifactRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Artifact repository name</description>
+        </parameter>
+        <parameter>
+          <name>executable</name>
+          <type>java.lang.String</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>executable</description>
+        </parameter>
+        <parameter>
+          <name>forkedProcessTimeoutInSeconds</name>
+          <type>int</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Kill the forked test process after a certain number of seconds. If set to 0, wait forever for
+the process, never timing out.</description>
+        </parameter>
+        <parameter>
+          <name>metadataRepository</name>
+          <type>java.net.URL</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>Metadata repository name</description>
+        </parameter>
+        <parameter>
+          <name>productConfigurationFile</name>
+          <type>java.io.File</type>
+          <required>false</required>
+          <editable>true</editable>
+          <description>The product configuration, a .product file. This file manages all aspects
+of a product definition from its constituent plug-ins to configuration
+files to branding.</description>
+        </parameter>
+        <parameter>
+          <name>project</name>
+          <type>org.apache.maven.project.MavenProject</type>
+          <required>true</required>
+          <editable>true</editable>
+          <description></description>
+        </parameter>
+      </parameters>
+      <configuration>
+        <forkedProcessTimeoutInSeconds implementation="int">${p2.timeout}</forkedProcessTimeoutInSeconds>
+        <productConfigurationFile implementation="java.io.File">${productConfiguration}</productConfigurationFile>
+        <project implementation="org.apache.maven.project.MavenProject">${project}</project>
+      </configuration>
+      <requirements>
+        <requirement>
+          <role>org.codehaus.plexus.archiver.UnArchiver</role>
+          <role-hint>zip</role-hint>
+          <field-name>deflater</field-name>
+        </requirement>
+        <requirement>
+          <role>org.eclipse.tycho.p2.facade.internal.P2ApplicationLauncher</role>
+          <field-name>launcher</field-name>
+        </requirement>
+      </requirements>
+    </mojo>
+  </mojos>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-plexus</artifactId>
+      <type>jar</type>
+      <version>1.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-inject-bean</artifactId>
+      <type>jar</type>
+      <version>1.4.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.sisu</groupId>
+      <artifactId>sisu-guice</artifactId>
+      <type>jar</type>
+      <version>2.1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings-builder</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-repository-metadata</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-model-builder</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-aether-provider</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-impl</artifactId>
+      <type>jar</type>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+      <type>jar</type>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <type>jar</type>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.aether</groupId>
+      <artifactId>aether-util</artifactId>
+      <type>jar</type>
+      <version>1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-interpolation</artifactId>
+      <type>jar</type>
+      <version>1.14</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <type>jar</type>
+      <version>2.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-classworlds</artifactId>
+      <type>jar</type>
+      <version>2.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-component-annotations</artifactId>
+      <type>jar</type>
+      <version>1.5.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.plexus</groupId>
+      <artifactId>plexus-sec-dispatcher</artifactId>
+      <type>jar</type>
+      <version>1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.plexus</groupId>
+      <artifactId>plexus-cipher</artifactId>
+      <type>jar</type>
+      <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-equinox</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>org.eclipse.osgi</artifactId>
+      <type>jar</type>
+      <version>3.8.0.v20110726-1606</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-equinox-api</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-equinox-launching</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-core</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-archiver</artifactId>
+      <type>jar</type>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-io</artifactId>
+      <type>jar</type>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-metadata-model</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>de.pdark</groupId>
+      <artifactId>decentxml</artifactId>
+      <type>jar</type>
+      <version>1.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-embedder-api</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>tycho-p2-facade</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-compat</artifactId>
+      <type>jar</type>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.wagon</groupId>
+      <artifactId>wagon-provider-api</artifactId>
+      <type>jar</type>
+      <version>1.0-beta-6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>org.eclipse.tycho.p2.resolver.facade</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.tycho</groupId>
+      <artifactId>org.eclipse.tycho.p2.tools.facade</artifactId>
+      <type>jar</type>
+      <version>0.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-project</artifactId>
+      <type>jar</type>
+      <version>2.0.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-profile</artifactId>
+      <type>jar</type>
+      <version>2.0.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-artifact-manager</artifactId>
+      <type>jar</type>
+      <version>2.0.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-container-default</artifactId>
+      <type>jar</type>
+      <version>1.0-alpha-9</version>
+    </dependency>
+    <dependency>
+      <groupId>classworlds</groupId>
+      <artifactId>classworlds</artifactId>
+      <type>jar</type>
+      <version>1.1-alpha-2</version>
+    </dependency>
+  </dependencies>
+</plugin>

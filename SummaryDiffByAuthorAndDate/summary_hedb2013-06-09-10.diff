@@ -1,0 +1,4403 @@
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/spring/spring.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/spring/spring.xml	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/spring/spring.xml	(版本 501)
+@@ -38,14 +38,14 @@
+ 	<bean id="trackapp" class="com.tongtech.edge.tools.tracking.TrackingApp">
+ 		<constructor-arg index="0" value="Monitoring" />
+ 		<constructor-arg index="1" value="ReadZones" />
+-		<property name="trackingMessageFactory" ref="messageFactory"></property>
++		<property name="trackingMessageFactory" ref="messageFactory"/>
+ 		<property name="readZoneMonitoringService" ref="readZoneMonitoringService" />
+ 		<property name="jmsTextSender" ref="jmsEventSender" />
+ 	</bean>
+ 	<osgi:service ref="trackapp" interface="com.tongtech.edge.api.EdgeApp" />
+ 
+ 
+-	<!-- Create the application and inject esper and teh JMS sender -->
++	<!-- Create the application and inject esper and the JMS sender -->
+ 	<bean id="tagapp" class="com.tongtech.edge.tools.tracking.TagMonitor">
+ 		<constructor-arg index="0" value="Monitoring" />
+ 		<constructor-arg index="1" value="Tags" />
+@@ -53,7 +53,7 @@
+ 	</bean>
+ 	<osgi:service ref="tagapp" interface="com.tongtech.edge.api.EdgeApp" />
+ 
+-	<!-- Create the application and inject esper and teh JMS sender -->
++	<!-- Create the application and inject esper and the JMS sender -->
+ 	<bean id="sensorapp" class="com.tongtech.edge.tools.tracking.SensorMonitor">
+ 		<constructor-arg index="0" value="Monitoring" />
+ 		<constructor-arg index="1" value="SensorStatus" />
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/spring/diag.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/spring/diag.xml	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/spring/diag.xml	(版本 501)
+@@ -17,6 +17,7 @@
+ 		<constructor-arg index="0" value="Diagnostic" />
+ 		<constructor-arg index="1" value="GPIOSimulator" />
+ 	</bean>
++	<osgi:service ref="gpisimulationapp" interface="com.tongtech.edge.api.EdgeApp" />
+ 
+ 	<bean id="SerialApp" class="com.tongtech.edge.tools.diagnostics.SerialApp">
+ 		<constructor-arg index="0" value="Diagnostic" />
+@@ -36,8 +37,7 @@
+ 	</bean>
+ 	<osgi:service ref="TagGeneratorApp" auto-export="all-classes" />
+ 
+-	<osgi:set id="abstractGPIOService"
+-		interface="com.tongtech.edge.sensors.AbstractGPIOService"
++	<osgi:set id="abstractGPIOService" interface="com.tongtech.edge.sensors.AbstractGPIOService"
+ 		cardinality="0..N">
+ 		<osgi:listener ref="GPIOApp" bind-method="onBind"
+ 			unbind-method="onUnbind"></osgi:listener>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/MANIFEST.MF
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/MANIFEST.MF	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/META-INF/MANIFEST.MF	(版本 501)
+@@ -27,8 +27,8 @@
+  org.springframework.jms.core;version="3.0.5.RELEASE"
+ Bundle-ClassPath: .,
+  lib/RXTXcomm.jar
+-Require-Bundle: com.tongtech.edge.org.relique.jdbc;bundle-version="1.0.0",
+- com.tongtech.edge;bundle-version="5.4.0",
+- com.espertech.esper;bundle-version="4.7.0"
++Require-Bundle: com.tongtech.edge;bundle-version="5.4.0",
++ com.espertech.esper;bundle-version="4.7.0",
++ com.tongtech.edge.org.relique.jdbc;bundle-version="1.0.0"
+ Export-Package: com.tongtech.edge.tools.diagnostics,
+  com.tongtech.edge.tools.tracking
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/tracking/TrackingMessageFactory.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/tracking/TrackingMessageFactory.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/tracking/TrackingMessageFactory.java	(版本 501)
+@@ -22,6 +22,7 @@
+ 	/** Data access object to look up logical reader names from a data source */
+ 	private LogicalReadersDAO logicalReadersDAO;
+ 	/** Logger for this class */
++	@SuppressWarnings("unused")
+ 	private static final Log logger = LogFactory
+ 			.getLog(TrackingMessageFactory.class);
+ 
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/tracking/TrackingApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/tracking/TrackingApp.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/tracking/TrackingApp.java	(版本 501)
+@@ -23,6 +23,7 @@
+ 	/** The Data Access Object */
+ 	private volatile TrackingMessageFactory messageFactory;
+ 	/** The logger for this class */
++	@SuppressWarnings("unused")
+ 	private static Log logger = LogFactory.getLog(TrackingApp.class);
+ 	/** The service that monitors read zones. */
+ 	private volatile ReadZoneMonitoringService monitoringService;
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPIOApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPIOApp.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPIOApp.java	(版本 501)
+@@ -22,12 +22,12 @@
+  * @author kyle
+  * @author matt
+  */
+-public class GPIOApp extends AbstractEdgeApp{
++public class GPIOApp extends AbstractEdgeApp {
+ 
+ 	private static final Log logger = LogFactory.getLog(GPIOApp.class);
+ 
+ 	private final Set<AbstractGPIOService<?>> gpioServiceList = new CopyOnWriteArraySet<AbstractGPIOService<?>>();
+-	
++
+ 	/**
+ 	 * @param group
+ 	 * @param name
+@@ -35,18 +35,18 @@
+ 	public GPIOApp(String group, String name) {
+ 		super(group, name);
+ 	}
+-	
+-	/* (non-Javadoc)
++
++	/*
++	 * (non-Javadoc)
++	 * 
+ 	 * @see com.tongtech.edge.api.AbstractEdgeApp#lazyStart()
+ 	 */
+ 	@Override
+ 	public boolean lazyStart() {
+-		String lazyStart= getProperty(LAZY_START, "true");
++		String lazyStart = getProperty(LAZY_START, "true");
+ 		return Boolean.parseBoolean(lazyStart);
+ 	}
+ 
+-
+-
+ 	public void setGPO(String readerID, Set<Integer> ports)
+ 			throws CannotExecuteException {
+ 		Set<Integer> translatedPorts = new HashSet<Integer>();
+@@ -77,7 +77,7 @@
+ 		port = port - 1;
+ 		for (AbstractGPIOService<?> service : this.gpioServiceList) {
+ 			if (service.isReaderAvailable(readerID)) {
+-				service.testGPI(readerID, port);
++				return service.testGPI(readerID, port);
+ 			}
+ 		}
+ 		throw new CannotExecuteException();
+@@ -95,7 +95,7 @@
+ 
+ 	/**
+ 	 * @param gpioService
+-	 *            the gpioService to set
++	 *            the gpioService to remove
+ 	 */
+ 	public void onUnbind(AbstractGPIOService<?> gpioService,
+ 			Dictionary<String, String> parameters) {
+@@ -122,7 +122,9 @@
+ 		return this.gpioServiceList;
+ 	}
+ 
+-	/* (non-Javadoc)
++	/*
++	 * (non-Javadoc)
++	 * 
+ 	 * @see com.tongtech.edge.api.AbstractEdgeApp#getCommandProider()
+ 	 */
+ 	@Override
+@@ -131,5 +133,5 @@
+ 		commandProvider.setGpioApp(this);
+ 		return commandProvider;
+ 	}
+-	
++
+ }
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/ExposureRunner.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/ExposureRunner.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/ExposureRunner.java	(版本 501)
+@@ -7,7 +7,6 @@
+ import java.util.List;
+ import java.util.logging.Logger;
+ 
+-
+ import com.espertech.esper.client.EPRuntime;
+ import com.tongtech.edge.notification.ReadCycle;
+ 
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPIOAppCommandProvider.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPIOAppCommandProvider.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPIOAppCommandProvider.java	(版本 501)
+@@ -18,7 +18,8 @@
+ 
+ 	private volatile GPIOApp gpioApp;
+ 
+-	public Object _testGPI(CommandInterpreter intp) {
++	public Object _testGPI(CommandInterpreter intp)
++			throws NumberFormatException, CannotExecuteException {
+ 		String readerArg = intp.nextArgument();
+ 		if (readerArg == null || readerArg.equals("")) {
+ 			intp.println("Usage: testGPI <readerID> <port>");
+@@ -30,30 +31,23 @@
+ 			intp.println("Usage: testGPI <readerID> <port>");
+ 			return null;
+ 		}
+-		try {
+-			int port = Integer.parseInt(portArg);
+-			if (port < 0 || port > 3) {
+-				intp.println("port must be an integer 0-3");
+-				return null;
+-			}
+-
+-			boolean status = gpioApp.testGPI(readerArg, port);
+-			if (status) {
+-				intp.println("Port " + port + " is high");
+-			} else {
+-				intp.println("Port " + port + " is low");
+-			}
+-
+-		} catch (NumberFormatException e) {
++		int port = Integer.parseInt(portArg);
++		if (port < 0 || port > 3) {
+ 			intp.println("port must be an integer 0-3");
+-		} catch (CannotExecuteException e) {
+-			intp.println(e.getMessage());
++			return null;
+ 		}
+ 
+-		return null;
++		boolean status = gpioApp.testGPI(readerArg, port);
++		if (status) {
++			intp.println("Port " + port + " is high");
++		} else {
++			intp.println("Port " + port + " is low");
++		}
++		return status;
+ 	}
+ 
+-	public Object _setGPO(CommandInterpreter intp) {
++	public Object _setGPO(CommandInterpreter intp)
++			throws NumberFormatException, CannotExecuteException {
+ 		String readerArg = intp.nextArgument();
+ 		if (readerArg == null || readerArg.equals("")) {
+ 			intp.println("Usage: setGPO <readerID> [<port>]*");
+@@ -61,44 +55,33 @@
+ 		}
+ 
+ 		Set<Integer> ports = new HashSet<Integer>();
+-		try {
+-			String portArg = intp.nextArgument();
+-			while (portArg != null && !portArg.isEmpty()) {
+-				ports.add(Integer.parseInt(portArg));
+-				portArg = intp.nextArgument();
+-			}
+-			System.out.println("SET PORTS: " + ports);
+-			gpioApp.setGPO(readerArg, ports);
+-		} catch (NumberFormatException ex) {
+-			intp.println("port must be an integer");
+-		} catch (CannotExecuteException e) {
+-			intp.println(e.getMessage());
++		String portArg = intp.nextArgument();
++		while (portArg != null && !portArg.isEmpty()) {
++			ports.add(Integer.parseInt(portArg));
++			portArg = intp.nextArgument();
+ 		}
++		System.out.println("SET PORTS: " + ports);
++		gpioApp.setGPO(readerArg, ports);
+ 		return null;
+ 	}
+ 
+-	public Object _flashGPO(CommandInterpreter intp) {
++	public Object _flashGPO(CommandInterpreter intp)
++			throws NumberFormatException, CannotExecuteException {
+ 		String readerArg = intp.nextArgument();
+ 		if (readerArg == null || readerArg.equals("")) {
+ 			intp.println("Usage: flashGPO <readerID> <port>");
+ 			return null;
+ 		}
+ 
+-		try {
+-			String portArg = intp.nextArgument();
+-			int port;
+-			if (portArg != null && !portArg.isEmpty()) {
+-				port = Integer.parseInt(portArg);
+-			} else {
+-				intp.println("port must be an integer");
+-				return null;
+-			}
+-			gpioApp.flashGPO(readerArg, port, 4);
+-		} catch (NumberFormatException ex) {
++		String portArg = intp.nextArgument();
++		int port;
++		if (portArg != null && !portArg.isEmpty()) {
++			port = Integer.parseInt(portArg);
++		} else {
+ 			intp.println("port must be an integer");
+-		} catch (CannotExecuteException e) {
+-			intp.println(e.getMessage());
++			return null;
+ 		}
++		gpioApp.flashGPO(readerArg, port, 4);
+ 		return null;
+ 	}
+ 
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagApp.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagApp.java	(版本 501)
+@@ -11,6 +11,7 @@
+ import com.espertech.esper.client.EPOnDemandQueryResult;
+ import com.espertech.esper.client.EPServiceProvider;
+ import com.espertech.esper.client.EPStatement;
++import com.espertech.esper.client.EPStatementException;
+ import com.espertech.esper.client.EventBean;
+ import com.espertech.esper.client.StatementAwareUpdateListener;
+ import com.tongtech.edge.api.AbstractEdgeApp;
+@@ -38,13 +39,15 @@
+ 	public TagApp(String group, String name) {
+ 		super(group, name);
+ 	}
+-	
+-	/* (non-Javadoc)
++
++	/*
++	 * (non-Javadoc)
++	 * 
+ 	 * @see com.tongtech.edge.api.AbstractEdgeApp#lazyStart()
+ 	 */
+ 	@Override
+ 	public boolean lazyStart() {
+-		String lazyStart= getProperty(LAZY_START, "true");
++		String lazyStart = getProperty(LAZY_START, "true");
+ 		return Boolean.parseBoolean(lazyStart);
+ 	}
+ 
+@@ -63,11 +66,11 @@
+ 		addStatement("create window curtags.std:firstunique(tag.ID, readerID, antennaID).win:time(10 sec)"
+ 				+ "as TagReadEvent");
+ 
+-		//addStatement("insert into recenttags select * from ReadCycle[select * from tags]");
++		// addStatement("insert into recenttags select * from ReadCycle[select * from tags]");
+ 		addStatement("insert into recenttags select * from ReadCycle[tags]");
+ 
+ 		addStatement("insert into curtags select * from recenttags");
+-		
++
+ 	}
+ 
+ 	/**
+@@ -113,18 +116,19 @@
+ 		}
+ 		return currentTags;
+ 	}
+-	
+-	public void measureReadRate(final String seconds){
++
++	public Object measureReadRate(final String seconds)
++			throws EPStatementException {
+ 		if (getState() != AppState.STARTED) {
+ 			logger.warn("TagApp not started. Use 'startapp <AppID>'");
+-			return;
++			return null;
+ 		}
+ 
+-		addStatement("select tags from pattern" +
+-				"[every tags=ReadCycle[select * from tags] " +
+-				"until timer:interval("+seconds+" sec)]", 
++		addStatement("select tags from pattern"
++				+ "[every tags=ReadCycle[select * from tags] "
++				+ "until timer:interval(" + seconds + " sec)]",
+ 				new StatementAwareUpdateListener() {
+-			
++
+ 					@Override
+ 					public void update(EventBean[] arg0, EventBean[] arg1,
+ 							EPStatement arg2, EPServiceProvider arg3) {
+@@ -133,9 +137,9 @@
+ 								TagReadEvent[] tags = (TagReadEvent[]) b
+ 										.get("tags");
+ 								float count;
+-								if(tags==null){
++								if (tags == null) {
+ 									count = 0f;
+-								}else{
++								} else {
+ 									count = new Float(tags.length);
+ 								}
+ 								float time = Float.parseFloat(seconds);
+@@ -149,6 +153,7 @@
+ 
+ 					}
+ 				});
++		return null;
+ 
+ 	}
+ 
+@@ -162,7 +167,9 @@
+ 		this.recentTagTimeout = getProperty("RecentTagTimeout", "10 min");
+ 	}
+ 
+-	/* (non-Javadoc)
++	/*
++	 * (non-Javadoc)
++	 * 
+ 	 * @see com.tongtech.edge.api.AbstractEdgeApp#getCommandProider()
+ 	 */
+ 	@Override
+@@ -171,7 +178,5 @@
+ 		provider.setTagApp(this);
+ 		return provider;
+ 	}
+-	
+-	
+ 
+ }
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPISimulatorApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPISimulatorApp.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPISimulatorApp.java	(版本 501)
+@@ -54,13 +54,15 @@
+ 		addStatement("select * from GPIEvent", stateUpdateListener);
+ 		addStatement("select * from GPOEvent", stateUpdateListener);
+ 	}
+-	
+-	/* (non-Javadoc)
++
++	/*
++	 * (non-Javadoc)
++	 * 
+ 	 * @see com.tongtech.edge.api.AbstractEdgeApp#lazyStart()
+ 	 */
+ 	@Override
+ 	public boolean lazyStart() {
+-		String lazyStart= getProperty(LAZY_START, "true");
++		String lazyStart = getProperty(LAZY_START, "true");
+ 		return Boolean.parseBoolean(lazyStart);
+ 	}
+ 
+@@ -97,7 +99,7 @@
+ 	}
+ 
+ 	/*
+-	 * Set the given GPO ports high.
++	 * Set the given GPI ports high.
+ 	 */
+ 	public void simGPIHigh(String readerID, Set<Integer> ports) {
+ 		for (Integer port : ports) {
+@@ -107,7 +109,7 @@
+ 	}
+ 
+ 	/*
+-	 * Set the given GPO ports low.
++	 * Set the given GPI ports low.
+ 	 */
+ 	public void simGPILow(String readerID, Set<Integer> ports) {
+ 		for (Integer port : ports) {
+@@ -117,7 +119,7 @@
+ 	}
+ 
+ 	/*
+-	 * Flash the given GPO ports high for the given number of seconds.
++	 * Flash the given GPI ports high for the given number of seconds.
+ 	 */
+ 	public void simGPIFlashHigh(String readerID, Integer seconds,
+ 			Set<Integer> ports) {
+@@ -125,7 +127,7 @@
+ 	}
+ 
+ 	/*
+-	 * Flash the given GPO ports low for the given number of seconds.
++	 * Flash the given GPI ports low for the given number of seconds.
+ 	 */
+ 	public void simGPIFlashLow(String readerID, Integer seconds,
+ 			Set<Integer> ports) {
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialApp.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialApp.java	(版本 501)
+@@ -40,13 +40,15 @@
+ 	public SerialApp(String group, String name) {
+ 		super(group, name);
+ 	}
+-	
+-	/* (non-Javadoc)
++
++	/*
++	 * (non-Javadoc)
++	 * 
+ 	 * @see com.tongtech.edge.api.AbstractEdgeApp#lazyStart()
+ 	 */
+ 	@Override
+ 	public boolean lazyStart() {
+-		String lazyStart= getProperty(LAZY_START, "true");
++		String lazyStart = getProperty(LAZY_START, "true");
+ 		return Boolean.parseBoolean(lazyStart);
+ 	}
+ 
+@@ -68,14 +70,17 @@
+ 	 * @param intp
+ 	 */
+ 	@SuppressWarnings("unchecked")
+-	public void listSerialPorts(CommandInterpreter intp) {
++	public Integer listSerialPorts(CommandInterpreter intp) {
+ 		Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier
+ 				.getPortIdentifiers();
++		Integer i = 0;
+ 		while (portEnum.hasMoreElements()) {
++			i++;
+ 			CommPortIdentifier portIdentifier = portEnum.nextElement();
+ 			intp.println(portIdentifier.getName() + " - "
+ 					+ getPortTypeName(portIdentifier.getPortType()));
+ 		}
++		return i;
+ 	}
+ 
+ 	/**
+@@ -83,8 +88,9 @@
+ 	 * @param serialPort
+ 	 */
+ 	public void openSerialPort(String serialPort, int baud, int databits,
+-			int stopbits, int parity) {
++			int stopbits, int parity) throws Exception {
+ 		serial.start(serialPort, baud, databits, stopbits, parity);
++		System.out.println(serial);
+ 	}
+ 
+ 	/**
+@@ -186,17 +192,11 @@
+ 		 * 
+ 		 * @param port
+ 		 */
+-		public void start(String port, int baud, int data, int stop, int parity) {
++		public void start(String port, int baud, int data, int stop, int parity)
++				throws Exception {
+ 			if (!isOpen) {
+-				try {
+-					(new SerialTester())
+-							.connect(port, baud, data, stop, parity);
+-					isOpen = true;
+-				} catch (Exception e) {
+-					System.err
+-							.println("There was an exception while trying to connect to serial port "
+-									+ port + ": " + e.getMessage());
+-				}
++				(new SerialTester()).connect(port, baud, data, stop, parity);
++				isOpen = true;
+ 			}
+ 		}
+ 
+@@ -212,7 +212,6 @@
+ 					this.commPort.getInputStream().close();
+ 				}
+ 			} catch (Exception e) {
+-				// Don't care
+ 			} finally {
+ 				if (this.commPort != null) {
+ 					this.commPort.close();
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorApp.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorApp.java	(版本 501)
+@@ -39,7 +39,7 @@
+  * @author Kyle Neumeier - kyle@pramari.com
+  * 
+  */
+-public class TagGeneratorApp extends AbstractEdgeApp implements TagGenerator{
++public class TagGeneratorApp extends AbstractEdgeApp implements TagGenerator {
+ 
+ 	/** The List of tagReadData */
+ 	private HashMap<String, List<AbstractReadData<?>>> tagReadData = new HashMap<String, List<AbstractReadData<?>>>();
+@@ -108,9 +108,13 @@
+ 		String lazyStart = getProperty(LAZY_START, "true");
+ 		return Boolean.parseBoolean(lazyStart);
+ 	}
+-	
+-	/* (non-Javadoc)
+-	 * @see com.tongtech.edge.diagnostics.tags.generator.TagGenerator#startRunner(java.util.List, com.tongtech.edge.diagnostics.tags.generator.Exposure)
++
++	/*
++	 * (non-Javadoc)
++	 * 
++	 * @see
++	 * com.tongtech.edge.diagnostics.tags.generator.TagGenerator#startRunner
++	 * (java.util.List, com.tongtech.edge.diagnostics.tags.generator.Exposure)
+ 	 */
+ 	@Override
+ 	public Integer startRunner(List<AbstractReadData<?>> tags, Exposure exposure) {
+@@ -137,38 +141,45 @@
+ 		Exposure exposure = exposures.get(exposureID);
+ 		return startRunner(tags, exposure);
+ 	}
+-	
+-	/* (non-Javadoc)
+-	 * @see com.tongtech.edge.diagnostics.tags.generator.TagGenerator#stopRunner(java.lang.Integer)
++
++	/*
++	 * (non-Javadoc)
++	 * 
++	 * @see
++	 * com.tongtech.edge.diagnostics.tags.generator.TagGenerator#stopRunner(
++	 * java.lang.Integer)
+ 	 */
+ 	@Override
+ 	public void stopRunner(Integer runnerID) {
+ 		// TODO Auto-generated method stub
+-		
++
+ 	}
+-	
+-	
+ 
+-	/* (non-Javadoc)
+-	 * @see com.tongtech.edge.diagnostics.tags.generator.TagGenerator#addExposure(java.lang.String, com.tongtech.edge.diagnostics.tags.generator.Exposure)
++	/*
++	 * (non-Javadoc)
++	 * 
++	 * @see
++	 * com.tongtech.edge.diagnostics.tags.generator.TagGenerator#addExposure
++	 * (java.lang.String, com.tongtech.edge.diagnostics.tags.generator.Exposure)
+ 	 */
+ 	@Override
+ 	public void addExposure(String exposureID, Exposure exposure) {
+ 		exposures.put(exposureID, exposure);
+-		
++
+ 	}
+ 
+-	/* (non-Javadoc)
+-	 * @see com.tongtech.edge.diagnostics.tags.generator.TagGenerator#addTagSet(java.lang.String, java.util.List)
++	/*
++	 * (non-Javadoc)
++	 * 
++	 * @see
++	 * com.tongtech.edge.diagnostics.tags.generator.TagGenerator#addTagSet(java
++	 * .lang.String, java.util.List)
+ 	 */
+ 	@Override
+ 	public void addTagSet(String tagSetID, List<AbstractReadData<?>> tags) {
+ 		tagReadData.put(tagSetID, tags);
+-		
+ 	}
+ 
+-
+-
+ 	/*
+ 	 * (non-Javadoc)
+ 	 * 
+@@ -208,9 +219,8 @@
+ 			while (line != null) {
+ 				if (!line.isEmpty() && !line.startsWith("#")) {
+ 					String[] values = line.split(",");
+-					retVal
+-							.add(new TagReadData(values[0], values[1],
+-									Integer.parseInt(values[2])));
++					retVal.add(new TagReadData(values[0], values[1], Integer
++							.parseInt(values[2])));
+ 				}
+ 				line = reader.readLine();
+ 			}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagAppCommandProvider.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagAppCommandProvider.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagAppCommandProvider.java	(版本 501)
+@@ -3,6 +3,7 @@
+ import org.eclipse.osgi.framework.console.CommandInterpreter;
+ import org.eclipse.osgi.framework.console.CommandProvider;
+ 
++import com.espertech.esper.client.EPStatementException;
+ import com.tongtech.edge.notification.TagReadEvent;
+ 
+ /**
+@@ -24,7 +25,7 @@
+ 		for (TagReadEvent tag : tagApp.getRecentTags(readerID)) {
+ 			intp.println(tag);
+ 		}
+-		return null;
++		return tagApp.getCurrentTags(readerID);
+ 	}
+ 
+ 	public Object _currenttags(CommandInterpreter intp) {
+@@ -33,13 +34,14 @@
+ 			intp.println("Usage: currenttags <readerID>");
+ 			return null;
+ 		}
++		
+ 		for (TagReadEvent tag : tagApp.getCurrentTags(readerID)) {
+ 			intp.println(tag);
+ 		}
+-		return null;
++		return tagApp.getCurrentTags(readerID);
+ 	}
+ 
+-	public Object _tagrate(CommandInterpreter intp) {
++	public Object _tagrate(CommandInterpreter intp) throws EPStatementException {
+ 		String seconds = intp.nextArgument();
+ 		if (seconds == null || seconds.isEmpty()) {
+ 			seconds = "5";
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialCommandProvider.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialCommandProvider.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialCommandProvider.java	(版本 501)
+@@ -32,8 +32,7 @@
+ 	 * @return
+ 	 */
+ 	public Object _listSerial(CommandInterpreter intp) {
+-		this.serialApp.listSerialPorts(intp);
+-		return null;
++		return this.serialApp.listSerialPorts(intp);
+ 	}
+ 
+ 	/**
+@@ -41,8 +40,11 @@
+ 	 * 
+ 	 * @param intp
+ 	 * @return
++	 * @throws Exception
++	 * @throws NumberFormatException
+ 	 */
+-	public Object _connectSerial(CommandInterpreter intp) {
++	public Object _connectSerial(CommandInterpreter intp)
++			throws NumberFormatException, Exception {
+ 		String port = intp.nextArgument();
+ 		if (port == null || port.equals("")) {
+ 			intp.println("usage: connectSerial <port> <baud> "
+@@ -73,12 +75,11 @@
+ 					+ "<databits> <stopbits> <parity>");
+ 			return null;
+ 		}
+-		this.serialApp
+-				.openSerialPort(port, Integer.parseInt(baud), Integer
+-						.parseInt(data), Integer.parseInt(stop), Integer
+-						.parseInt(stop));
++		this.serialApp.openSerialPort(port, Integer.parseInt(baud),
++				Integer.parseInt(data), Integer.parseInt(stop),
++				Integer.parseInt(parity));
+ 		return null;
+-	}
++	}	
+ 
+ 	/**
+ 	 * Disconnects from the serial port that it is currently connected to.
+@@ -122,12 +123,12 @@
+ 	public String getHelp() {
+ 		StringBuffer retVal = new StringBuffer();
+ 		retVal.append("  ---Diagnostic Serial App Commands---\n");
+-		retVal.append("\tlistSerial - Prints out a list of serial ports " +
+-				"that belong to this reader \n");
+-		retVal.append("\tconnectSerial <port> <baud> <databits> <stopbits> <parity> " +
+-				"- Connects to a serial port with the given options.  \n");
+-		retVal.append("\tdisconnectSerial - Disconnects you from any serial ports you are " +
+-				"connected to.\n");
++		retVal.append("\tlistSerial - Prints out a list of serial ports "
++				+ "that belong to this reader \n");
++		retVal.append("\tconnectSerial <port> <baud> <databits> <stopbits> <parity> "
++				+ "- Connects to a serial port with the given options.  \n");
++		retVal.append("\tdisconnectSerial - Disconnects you from any serial ports you are "
++				+ "connected to.\n");
+ 		return retVal.toString();
+ 	}
+ 
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPISimulatorAppCommandProvider.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPISimulatorAppCommandProvider.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/GPISimulatorAppCommandProvider.java	(版本 501)
+@@ -33,7 +33,8 @@
+ 	}
+ 
+ 	/**
+-	 * @param simApp the simApp to set
++	 * @param simApp
++	 *            the simApp to set
+ 	 */
+ 	public void setSimApp(GPISimulatorApp simApp) {
+ 		this.simApp = simApp;
+@@ -45,7 +46,8 @@
+ 	 * @param intp
+ 	 * @return
+ 	 */
+-	public Object _simGPIHigh(CommandInterpreter intp) {
++	public Object _simGPIHigh(CommandInterpreter intp)
++			throws NumberFormatException {
+ 		String readerArg = intp.nextArgument();
+ 		if (readerArg == null || readerArg.equals("")) {
+ 			intp.println("Usage: simGPIHigh <readerID> <port1> [port2]* ");
+@@ -57,7 +59,6 @@
+ 		while (!done) {
+ 			String nextArg = intp.nextArgument();
+ 			if (nextArg != null && !nextArg.equals("")) {
+-
+ 				Integer port = Integer.parseInt(nextArg);
+ 				ports.add(port);
+ 			} else {
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorCommandProvider.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorCommandProvider.java	(版本 500)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorCommandProvider.java	(版本 501)
+@@ -19,8 +19,7 @@
+ 	public Object _startTagRunner(CommandInterpreter intp) {
+ 		String tagSetID = intp.nextArgument();
+ 		String exposureID = intp.nextArgument();
+-		generatorApp.startRunner(tagSetID, exposureID);
+-		return null;
++		return generatorApp.startRunner(tagSetID, exposureID);
+ 	}
+ 
+ 	/**
+@@ -40,7 +39,7 @@
+ 	public String getHelp() {
+ 		StringBuffer retVal = new StringBuffer();
+ 		retVal.append("  ---Diagnostic Tag Generator App Commands---\n");
+-		retVal.append( "\tstartTagRunner <tagSetID> <exposureID> - starts a given tag runner based "
++		retVal.append("\tstartTagRunner <tagSetID> <exposureID> - starts a given tag runner based "
+ 				+ "on the tag and exposure property files in "
+ 				+ "the Diagnostic data folder\n");
+ 		return retVal.toString();
+
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.classpath
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.classpath	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.classpath	(版本 502)
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="src" output="target/classes" path="src/main/java">
++		<attributes>
++			<attribute name="optional" value="true"/>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="output" path="target/classes"/>
++</classpath>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.project
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.project	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.project	(版本 502)
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>com.tongtech.edge.tools.rmiclient</name>
++	<comment></comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.m2e.core.maven2Builder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++		<nature>org.eclipse.m2e.core.maven2Nature</nature>
++	</natures>
++</projectDescription>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/lib/com.tongtech.edge_5.4.0.jar
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/lib/com.tongtech.edge_5.4.0.jar
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/lib/com.tongtech.edge_5.4.0.jar	(版本 501)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/lib/com.tongtech.edge_5.4.0.jar	(版本 502)
+
+ 属性改变: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/lib/com.tongtech.edge_5.4.0.jar
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/com.tongtech.edge.tools.rmiclient-0.0.1-SNAPSHOT.jar
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/com.tongtech.edge.tools.rmiclient-0.0.1-SNAPSHOT.jar
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/com.tongtech.edge.tools.rmiclient-0.0.1-SNAPSHOT.jar	(版本 501)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/com.tongtech.edge.tools.rmiclient-0.0.1-SNAPSHOT.jar	(版本 502)
+
+ 属性改变: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/com.tongtech.edge.tools.rmiclient-0.0.1-SNAPSHOT.jar
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/maven-archiver/pom.properties
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/maven-archiver/pom.properties	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/maven-archiver/pom.properties	(版本 502)
+@@ -0,0 +1,5 @@
++#Generated by Maven
++#Fri Jun 07 15:54:19 CST 2013
++version=0.0.1-SNAPSHOT
++groupId=com.tongtech.edge.tools.rmiclient
++artifactId=com.tongtech.edge.tools.rmiclient
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/maven/com.tongtech.edge.tools.rmiclient/com.tongtech.edge.tools.rmiclient/pom.properties
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/maven/com.tongtech.edge.tools.rmiclient/com.tongtech.edge.tools.rmiclient/pom.properties	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/maven/com.tongtech.edge.tools.rmiclient/com.tongtech.edge.tools.rmiclient/pom.properties	(版本 502)
+@@ -0,0 +1,7 @@
++#Generated by Maven Integration for Eclipse
++#Sat Jun 08 11:04:37 CST 2013
++version=0.0.1-SNAPSHOT
++groupId=com.tongtech.edge.tools.rmiclient
++m2e.projectName=com.tongtech.edge.tools.rmiclient
++m2e.projectLocation=C\:\\Users\\Administrator\\Desktop\\TI-EDGE Server\\com.tongtech.edge.tools.rmiclient
++artifactId=com.tongtech.edge.tools.rmiclient
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/maven/com.tongtech.edge.tools.rmiclient/com.tongtech.edge.tools.rmiclient/pom.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/maven/com.tongtech.edge.tools.rmiclient/com.tongtech.edge.tools.rmiclient/pom.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/maven/com.tongtech.edge.tools.rmiclient/com.tongtech.edge.tools.rmiclient/pom.xml	(版本 502)
+@@ -0,0 +1,58 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++	<modelVersion>4.0.0</modelVersion>
++	<groupId>com.tongtech.edge.tools.rmiclient</groupId>
++	<artifactId>com.tongtech.edge.tools.rmiclient</artifactId>
++	<version>0.0.1-SNAPSHOT</version>
++	
++	<dependencies>
++		<dependency>
++			<groupId>com.tongtech.edge.tools</groupId>
++			<artifactId>com.tongtech.edge.tools</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.eclipse</groupId>
++			<artifactId>org.eclipse.osgi</artifactId>
++			<version>3.8.0.v20120529-1548</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-beans</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge</groupId>
++			<artifactId>com.tongtech.edge</artifactId>
++			<version>5.4.0</version>
++			<scope>system</scope>
++			<systemPath>${basedir}\lib\com.tongtech.edge_5.4.0.jar</systemPath>
++		</dependency>
++		<dependency>
++			<groupId>org.rxtx</groupId>
++			<artifactId>rxtx</artifactId>
++			<version>2.1.7</version>
++		</dependency>
++		<dependency>
++			<groupId>com.espertech</groupId>
++			<artifactId>esper</artifactId>
++			<version>4.7.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-context</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.springsource</groupId>
++			<artifactId>com.springsource.org.aopalliance</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge.api</groupId>
++			<artifactId>com.tongtech.edge.api</artifactId>
++			<version>1.3.0</version>
++		</dependency>
++	</dependencies>
++</project>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/MANIFEST.MF
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/MANIFEST.MF	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/META-INF/MANIFEST.MF	(版本 502)
+@@ -0,0 +1,5 @@
++Manifest-Version: 1.0
++Built-By: Administrator
++Build-Jdk: 1.6.0_27
++Created-By: Maven Integration for Eclipse
++
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/rmiclient.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/rmiclient.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/target/classes/rmiclient.xml	(版本 502)
+@@ -0,0 +1,45 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
++    "http://www.springframework.org/dtd/spring-beans.dtd">
++<beans>
++	<bean id="GPIOService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPIOService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPIO</value>
++		</property>
++	</bean>
++	<bean id="GPISimulatorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPISimulatorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPISimulator</value>
++		</property>
++	</bean>
++	<bean id="SerialService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/SerialService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.Serial</value>
++		</property>
++	</bean>
++	<bean id="TagGeneratorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagGeneratorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagGenerator</value>
++		</property>
++	</bean>
++	<bean id="TagAppService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagAppService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagApp</value>
++		</property>
++	</bean>
++</beans>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/rmiclient.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/rmiclient.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/rmiclient.xml	(版本 502)
+@@ -0,0 +1,45 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
++    "http://www.springframework.org/dtd/spring-beans.dtd">
++<beans>
++	<bean id="GPIOService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPIOService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPIO</value>
++		</property>
++	</bean>
++	<bean id="GPISimulatorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPISimulatorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPISimulator</value>
++		</property>
++	</bean>
++	<bean id="SerialService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/SerialService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.Serial</value>
++		</property>
++	</bean>
++	<bean id="TagGeneratorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagGeneratorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagGenerator</value>
++		</property>
++	</bean>
++	<bean id="TagAppService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagAppService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagApp</value>
++		</property>
++	</bean>
++</beans>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/helper/CommandParameter.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/helper/CommandParameter.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/helper/CommandParameter.java	(版本 502)
+@@ -0,0 +1,77 @@
++package com.tongtech.edge.tools.helper;
++
++import java.io.Serializable;
++import java.util.Dictionary;
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.osgi.framework.Bundle;
++
++public class CommandParameter implements CommandInterpreter, Serializable {
++	private static final long serialVersionUID = 1L;
++	private static final String WS_DELIM = " \t\n\r\f";
++	private StringParaToKenizer tok;
++	private String parameter;
++
++	public CommandParameter(String parameter) {
++		this.parameter = parameter;
++		tok = new StringParaToKenizer(this.parameter);
++	}
++
++	public Object execute(String arg0) {
++		return null;
++	}
++
++	public String nextArgument() {
++
++		if (tok == null || !tok.hasMoreElements())
++			return null;
++		String arg = tok.nextToken();
++		if (arg.startsWith("\"")) {//$NON-NLS-1$ 
++			if (arg.endsWith("\"")) { //$NON-NLS-1$ 
++				if (arg.length() >= 2) // strip the beginning and ending quotes
++					return arg.substring(1, arg.length() - 1);
++			}
++			String remainingArg = tok.nextToken("\""); //$NON-NLS-1$ 
++			arg = arg.substring(1) + remainingArg; // skip to next whitespace
++													// separated token
++			tok.nextToken(WS_DELIM);
++		} else if (arg.startsWith("'")) {
++			//$NON-NLS-1$ //$NON-NLS-2$ 
++			if (arg.endsWith("'")) { //$NON-NLS-1$ 
++				if (arg.length() >= 2) // skip the beginning and ending quotes
++					return arg.substring(1, arg.length() - 1);
++			}
++			String remainingArg = tok.nextToken("'"); //$NON-NLS-1$ 
++			arg = arg.substring(1) + remainingArg; // skip to next whitespace
++													// separated token
++			tok.nextToken(WS_DELIM);
++		}
++		return arg;
++
++	}
++
++	public void printBundleResource(Bundle arg0, String arg1) {
++
++	}
++
++	public void printStackTrace(Throwable arg0) {
++		System.out.println(arg0);
++	}
++
++	public void println() {
++
++	}
++
++	public void println(Object arg0) {
++		System.out.println(arg0);
++	}
++
++	public void print(Object o) {
++		// TODO Auto-generated method stub
++
++	}
++
++	public void printDictionary(Dictionary<?, ?> dic, String title) {
++		// TODO Auto-generated method stub
++
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/helper/StringParaToKenizer.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/helper/StringParaToKenizer.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/helper/StringParaToKenizer.java	(版本 502)
+@@ -0,0 +1,178 @@
++package com.tongtech.edge.tools.helper;
++
++import java.io.Serializable;
++import java.util.Enumeration;
++import java.util.NoSuchElementException;
++
++public class StringParaToKenizer implements Serializable, Enumeration<Object> {
++
++	private static final long serialVersionUID = 1L;
++	private int currentPosition;
++	private int newPosition;
++	private int maxPosition;
++	private String str;
++	private String delimiters;
++	private boolean retDelims;
++	private boolean delimsChanged;
++	private int maxDelimCodePoint;
++	private boolean hasSurrogates = false;
++	private int[] delimiterCodePoints;
++
++	private void setMaxDelimCodePoint() {
++		if (delimiters == null) {
++			maxDelimCodePoint = 0;
++			return;
++		}
++		int m = 0;
++		int c;
++		int count = 0;
++		for (int i = 0; i < delimiters.length(); i += Character.charCount(c)) {
++			c = delimiters.charAt(i);
++			if (c >= Character.MIN_HIGH_SURROGATE
++					&& c <= Character.MAX_LOW_SURROGATE) {
++				c = delimiters.codePointAt(i);
++				hasSurrogates = true;
++			}
++			if (m < c)
++				m = c;
++			count++;
++		}
++		maxDelimCodePoint = m;
++
++		if (hasSurrogates) {
++			delimiterCodePoints = new int[count];
++			for (int i = 0, j = 0; i < count; i++, j += Character.charCount(c)) {
++				c = delimiters.codePointAt(j);
++				delimiterCodePoints[i] = c;
++			}
++		}
++	}
++
++	public StringParaToKenizer(String str, String delim, boolean returnDelims) {
++		currentPosition = 0;
++		newPosition = -1;
++		delimsChanged = false;
++		this.str = str;
++		maxPosition = str.length();
++		delimiters = delim;
++		retDelims = returnDelims;
++		setMaxDelimCodePoint();
++	}
++
++	public StringParaToKenizer(String str, String delim) {
++		this(str, delim, false);
++	}
++
++	public StringParaToKenizer(String str) {
++		this(str, " \t\n\r\f", false);
++	}
++
++	private int skipDelimiters(int startPos) {
++		if (delimiters == null)
++			throw new NullPointerException();
++
++		int position = startPos;
++		while (!retDelims && position < maxPosition) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c > maxDelimCodePoint) || (delimiters.indexOf(c) < 0))
++					break;
++				position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c > maxDelimCodePoint) || !isDelimiter(c)) {
++					break;
++				}
++				position += Character.charCount(c);
++			}
++		}
++		return position;
++	}
++
++	private int scanToken(int startPos) {
++		int position = startPos;
++		while (position < maxPosition) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c <= maxDelimCodePoint) && (delimiters.indexOf(c) >= 0))
++					break;
++				position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c <= maxDelimCodePoint) && isDelimiter(c))
++					break;
++				position += Character.charCount(c);
++			}
++		}
++		if (retDelims && (startPos == position)) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c <= maxDelimCodePoint) && (delimiters.indexOf(c) >= 0))
++					position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c <= maxDelimCodePoint) && isDelimiter(c))
++					position += Character.charCount(c);
++			}
++		}
++		return position;
++	}
++
++	private boolean isDelimiter(int codePoint) {
++		for (int i = 0; i < delimiterCodePoints.length; i++) {
++			if (delimiterCodePoints[i] == codePoint) {
++				return true;
++			}
++		}
++		return false;
++	}
++
++	public boolean hasMoreTokens() {
++		newPosition = skipDelimiters(currentPosition);
++		return (newPosition < maxPosition);
++	}
++
++	public String nextToken() {
++
++		currentPosition = (newPosition >= 0 && !delimsChanged) ? newPosition
++				: skipDelimiters(currentPosition);
++
++		delimsChanged = false;
++		newPosition = -1;
++		if (currentPosition >= maxPosition)
++			throw new NoSuchElementException();
++		int start = currentPosition;
++		currentPosition = scanToken(currentPosition);
++		return str.substring(start, currentPosition);
++	}
++
++	public String nextToken(String delim) {
++		delimiters = delim;
++
++		delimsChanged = true;
++
++		setMaxDelimCodePoint();
++		return nextToken();
++	}
++
++	public boolean hasMoreElements() {
++		return hasMoreTokens();
++	}
++
++	public Object nextElement() {
++		return nextToken();
++	}
++
++	public int countTokens() {
++		int count = 0;
++		int currpos = currentPosition;
++		while (currpos < maxPosition) {
++			currpos = skipDelimiters(currpos);
++			if (currpos >= maxPosition)
++				break;
++			currpos = scanToken(currpos);
++			count++;
++		}
++		return count;
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/TagGeneratorClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/TagGeneratorClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/TagGeneratorClient.java	(版本 502)
+@@ -0,0 +1,20 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.TagGenerator;
++
++public class TagGeneratorClient {
++	protected TagGenerator tagGenerator = null;
++
++	public TagGeneratorClient() {
++		this.tagGenerator = (TagGenerator) new RmiClient().getBeanFactory()
++				.getBean("TagGeneratorService");
++	}
++
++	public Object tagGenerator(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagGenerator.generatorTag(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/RmiClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/RmiClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/RmiClient.java	(版本 502)
+@@ -0,0 +1,22 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import org.springframework.beans.factory.BeanFactory;
++import org.springframework.beans.factory.xml.XmlBeanFactory;
++import org.springframework.core.io.ClassPathResource;
++import org.springframework.core.io.Resource;
++
++@SuppressWarnings("deprecation")
++public class RmiClient {
++
++	private Resource cresource;
++	private static BeanFactory beanFactory;
++
++	public RmiClient() {
++		cresource = new ClassPathResource("rmiclient.xml");
++		beanFactory = new XmlBeanFactory(cresource);
++	}
++
++	public BeanFactory getBeanFactory() {
++		return beanFactory;
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/TagAppClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/TagAppClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/TagAppClient.java	(版本 502)
+@@ -0,0 +1,30 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.TagApp;
++
++public class TagAppClient {
++	protected TagApp tagApp;
++
++	public TagAppClient() {
++		this.tagApp = (TagApp) new RmiClient().getBeanFactory().getBean(
++				"TagAppService");
++	}
++
++	public Object recentTags(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagApp.recentTags(intp);
++	}
++
++	public Object currentTags(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagApp.currentTags(intp);
++	}
++
++	public Object tagRate(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagApp.tagRate(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/GPIOClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/GPIOClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/GPIOClient.java	(版本 502)
+@@ -0,0 +1,34 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.GPIO;
++
++public class GPIOClient {
++	protected GPIO gpio;
++
++	public GPIOClient() {
++		this.gpio = (GPIO) new RmiClient().getBeanFactory().getBean(
++				"GPIOService");
++	}
++
++	public Object flashGPO(String para) throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpio.flashGPO(intp);
++	}
++
++	public Object setGPO(String para) throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpio.setGPO(intp);
++	}
++
++	public Object testGPI(String para) throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpio.testGPI(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/GPISimulatorClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/GPISimulatorClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/GPISimulatorClient.java	(版本 502)
+@@ -0,0 +1,39 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.GPISimulator;
++
++public class GPISimulatorClient {
++	protected GPISimulator gpiSimulator;
++
++	public GPISimulatorClient() {
++		this.gpiSimulator = (GPISimulator) new RmiClient().getBeanFactory()
++				.getBean("GPISimulatorService");
++	}
++
++	public Object simulatorGPIHigh(String para) throws NumberFormatException,
++			RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPIHigh(intp);
++	}
++
++	public Object simulatorGPILow(String para) throws NumberFormatException,
++			RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPILow(intp);
++	}
++
++	public Object simulatorFlashGPIHigh(String para)
++			throws NumberFormatException, RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPIFlashHigh(intp);
++	}
++
++	public Object simulatorFlashGPILow(String para)
++			throws NumberFormatException, RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPIFlashLow(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/SerialClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/SerialClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiclient/SerialClient.java	(版本 502)
+@@ -0,0 +1,33 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import gnu.io.NoSuchPortException;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.Serial;
++
++public class SerialClient {
++	protected Serial serial;
++
++	public SerialClient() {
++		this.serial = (Serial) new RmiClient().getBeanFactory().getBean(
++				"SerialService");
++	}
++
++	public Object listSerial(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return serial.listSerial(intp);
++	}
++
++	public Object connectSerial(String para) throws RemoteException,
++			NoSuchPortException {
++		CommandParameter intp = new CommandParameter(para);
++		return serial.connectSerial(intp);
++	}
++
++	public Object disconnectSerial(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return serial.disconnectSerial(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/GPISimulator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/GPISimulator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/GPISimulator.java	(版本 502)
+@@ -0,0 +1,20 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface GPISimulator extends Remote {
++	public Object simulatorGPIHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPILow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPIFlashHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPIFlashLow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/Serial.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/Serial.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/Serial.java	(版本 502)
+@@ -0,0 +1,18 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import gnu.io.NoSuchPortException;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface Serial extends Remote {
++	public Object listSerial(CommandInterpreter intp) throws RemoteException;
++
++	public Object connectSerial(CommandInterpreter intp)
++			throws RemoteException, NoSuchPortException;
++
++	public Object disconnectSerial(CommandInterpreter intp)
++			throws RemoteException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/TagGenerator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/TagGenerator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/TagGenerator.java	(版本 502)
+@@ -0,0 +1,10 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface TagGenerator extends Remote {
++	public Object generatorTag(CommandInterpreter intp) throws RemoteException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/TagApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/TagApp.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/TagApp.java	(版本 502)
+@@ -0,0 +1,17 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++import com.espertech.esper.client.EPStatementException;
++
++public interface TagApp extends Remote {
++	public Object recentTags(CommandInterpreter intp) throws RemoteException;
++
++	public Object currentTags(CommandInterpreter intp) throws RemoteException;
++
++	public Object tagRate(CommandInterpreter intp) throws RemoteException,
++			EPStatementException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/GPIO.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/GPIO.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/src/main/java/com/tongtech/edge/tools/rmiserver/GPIO.java	(版本 502)
+@@ -0,0 +1,19 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++
++public interface GPIO extends Remote {
++	public Object testGPI(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++
++	public Object setGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++
++	public Object flashGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++}
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/pom.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/pom.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/pom.xml	(版本 502)
+@@ -0,0 +1,58 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++	<modelVersion>4.0.0</modelVersion>
++	<groupId>com.tongtech.edge.tools.rmiclient</groupId>
++	<artifactId>com.tongtech.edge.tools.rmiclient</artifactId>
++	<version>0.0.1-SNAPSHOT</version>
++	
++	<dependencies>
++		<dependency>
++			<groupId>com.tongtech.edge.tools</groupId>
++			<artifactId>com.tongtech.edge.tools</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.eclipse</groupId>
++			<artifactId>org.eclipse.osgi</artifactId>
++			<version>3.8.0.v20120529-1548</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-beans</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge</groupId>
++			<artifactId>com.tongtech.edge</artifactId>
++			<version>5.4.0</version>
++			<scope>system</scope>
++			<systemPath>${basedir}\lib\com.tongtech.edge_5.4.0.jar</systemPath>
++		</dependency>
++		<dependency>
++			<groupId>org.rxtx</groupId>
++			<artifactId>rxtx</artifactId>
++			<version>2.1.7</version>
++		</dependency>
++		<dependency>
++			<groupId>com.espertech</groupId>
++			<artifactId>esper</artifactId>
++			<version>4.7.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-context</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.springsource</groupId>
++			<artifactId>com.springsource.org.aopalliance</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge.api</groupId>
++			<artifactId>com.tongtech.edge.api</artifactId>
++			<version>1.3.0</version>
++		</dependency>
++	</dependencies>
++</project>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.settings/org.eclipse.jdt.core.prefs
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.settings/org.eclipse.jdt.core.prefs	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.settings/org.eclipse.jdt.core.prefs	(版本 502)
+@@ -0,0 +1,5 @@
++eclipse.preferences.version=1
++org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.5
++org.eclipse.jdt.core.compiler.compliance=1.5
++org.eclipse.jdt.core.compiler.problem.forbiddenReference=warning
++org.eclipse.jdt.core.compiler.source=1.5
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.settings/org.eclipse.m2e.core.prefs
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.settings/org.eclipse.m2e.core.prefs	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiclient/.settings/org.eclipse.m2e.core.prefs	(版本 502)
+@@ -0,0 +1,4 @@
++activeProfiles=
++eclipse.preferences.version=1
++resolveWorkspaceProjects=true
++version=1
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.classpath
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.classpath	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.classpath	(版本 502)
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
++	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
++	<classpathentry kind="src" path="src"/>
++	<classpathentry kind="output" path="bin"/>
++</classpath>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/META-INF/MANIFEST.MF
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/META-INF/MANIFEST.MF	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/META-INF/MANIFEST.MF	(版本 502)
+@@ -0,0 +1,28 @@
++Manifest-Version: 1.0
++Bundle-ManifestVersion: 2
++Bundle-Name: Rmiserver
++Bundle-SymbolicName: com.tongtech.edge.tools.rmiserver
++Bundle-Version: 1.0.0
++Bundle-Activator: com.tongtech.edge.tools.rmiserver.Activator
++Bundle-Vendor: TONGTECH
++Bundle-RequiredExecutionEnvironment: JavaSE-1.6
++Require-Bundle: com.tongtech.edge;bundle-version="5.4.0",
++ com.espertech.esper;bundle-version="4.7.0",
++ org.eclipse.osgi;bundle-version="3.8.1",
++ com.tongtech.edge.tools;bundle-version="1.0.0"
++Import-Package: net.sf.cglib.reflect;version="2.1.3",
++ org.aopalliance.intercept;version="1.0.0",
++ org.apache.commons.codec.binary;version="1.3.0",
++ org.osgi.framework;version="1.3.0",
++ org.springframework.aop.framework;version="3.1.2.RELEASE",
++ org.springframework.beans;version="3.1.2.RELEASE",
++ org.springframework.beans.factory;version="3.0.5.RELEASE",
++ org.springframework.beans.factory.config;version="3.0.5.RELEASE",
++ org.springframework.beans.factory.xml;version="3.1.2.RELEASE",
++ org.springframework.context;version="3.1.2.RELEASE",
++ org.springframework.context.support;version="3.1.2.RELEASE",
++ org.springframework.core;version="3.0.5.RELEASE",
++ org.springframework.core.io;version="3.1.2.RELEASE",
++ org.springframework.dao;version="3.0.5.RELEASE",
++ org.springframework.osgi.context.support;version="1.2.0",
++ org.springframework.remoting.rmi;version="3.1.2.RELEASE"
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.project
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.project	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.project	(版本 502)
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>com.tongtech.edge.tools.rmiserver</name>
++	<comment></comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.pde.ManifestBuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.pde.SchemaBuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.pde.PluginNature</nature>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++	</natures>
++</projectDescription>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/rmiserver.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/rmiserver.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/rmiserver.xml	(版本 502)
+@@ -0,0 +1,51 @@
++<beans xmlns="http://www.springframework.org/schema/beans"
++	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://www.springframework.org/schema/beans 
++	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd ">
++
++	<!-- xmlns:security="http://www.springframework.org/schema/security" -->
++
++
++	<bean id="GPIO" class="com.tongtech.edge.tools.rmiserverimpl.GPIOImpl" />
++	<bean id="GPIOService" class="org.springframework.remoting.rmi.RmiServiceExporter">
++		<property name="serviceName" value="GPIOService" />
++		<property name="service" ref="GPIO" />
++		<property name="serviceInterface" value="com.tongtech.edge.tools.rmiserver.GPIO" />
++		<property name="registryPort" value="1300" />
++
++	</bean>
++
++	<bean id="GPISimulator" class="com.tongtech.edge.tools.rmiserverimpl.GPISimulatorImpl" />
++	<bean id="GPISimulatorService" class="org.springframework.remoting.rmi.RmiServiceExporter">
++		<property name="serviceName" value="GPISimulatorService" />
++		<property name="service" ref="GPISimulator" />
++		<property name="serviceInterface"
++			value="com.tongtech.edge.tools.rmiserver.GPISimulator" />
++		<property name="registryPort" value="1300" />
++	</bean>
++
++	<bean id="Serial" class="com.tongtech.edge.tools.rmiserverimpl.SerialImpl" />
++	<bean id="SerialService" class="org.springframework.remoting.rmi.RmiServiceExporter">
++		<property name="serviceName" value="SerialService" />
++		<property name="service" ref="Serial" />
++		<property name="serviceInterface" value="com.tongtech.edge.tools.rmiserver.Serial" />
++		<property name="registryPort" value="1300" />
++	</bean>
++	<bean id="TagApp" class="com.tongtech.edge.tools.rmiserverimpl.TagAppImpl" />
++	<bean id="TagAppService" class="org.springframework.remoting.rmi.RmiServiceExporter">
++		<property name="serviceName" value="TagAppService" />
++		<property name="service" ref="TagApp" />
++		<property name="serviceInterface" value="com.tongtech.edge.tools.rmiserver.TagApp" />
++		<property name="registryPort" value="1300" />
++	</bean>
++	<bean id="TagGenerator" class="com.tongtech.edge.tools.rmiserverimpl.TagGeneratorImpl" />
++	<bean id="TagGeneratorService" class="org.springframework.remoting.rmi.RmiServiceExporter">
++		<property name="serviceName" value="TagGeneratorService" />
++		<property name="service" ref="TagGenerator" />
++		<property name="serviceInterface"
++			value="com.tongtech.edge.tools.rmiserver.TagGenerator" />
++		<property name="registryPort" value="1300" />
++	</bean>
++
++
++</beans>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/helper/CommandParameter.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/helper/CommandParameter.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/helper/CommandParameter.java	(版本 502)
+@@ -0,0 +1,77 @@
++package com.tongtech.edge.tools.helper;
++
++import java.io.Serializable;
++import java.util.Dictionary;
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.osgi.framework.Bundle;
++
++public class CommandParameter implements CommandInterpreter, Serializable {
++	private static final long serialVersionUID = 1L;
++	private static final String WS_DELIM = " \t\n\r\f";
++	private StringParaToKenizer tok;
++	private String parameter;
++
++	public CommandParameter(String parameter) {
++		this.parameter = parameter;
++		tok = new StringParaToKenizer(this.parameter);
++	}
++
++	public Object execute(String arg0) {
++		return null;
++	}
++
++	public String nextArgument() {
++
++		if (tok == null || !tok.hasMoreElements())
++			return null;
++		String arg = tok.nextToken();
++		if (arg.startsWith("\"")) {//$NON-NLS-1$ 
++			if (arg.endsWith("\"")) { //$NON-NLS-1$ 
++				if (arg.length() >= 2) // strip the beginning and ending quotes
++					return arg.substring(1, arg.length() - 1);
++			}
++			String remainingArg = tok.nextToken("\""); //$NON-NLS-1$ 
++			arg = arg.substring(1) + remainingArg; // skip to next whitespace
++													// separated token
++			tok.nextToken(WS_DELIM);
++		} else if (arg.startsWith("'")) {
++			//$NON-NLS-1$ //$NON-NLS-2$ 
++			if (arg.endsWith("'")) { //$NON-NLS-1$ 
++				if (arg.length() >= 2) // skip the beginning and ending quotes
++					return arg.substring(1, arg.length() - 1);
++			}
++			String remainingArg = tok.nextToken("'"); //$NON-NLS-1$ 
++			arg = arg.substring(1) + remainingArg; // skip to next whitespace
++													// separated token
++			tok.nextToken(WS_DELIM);
++		}
++		return arg;
++
++	}
++
++	public void printBundleResource(Bundle arg0, String arg1) {
++
++	}
++
++	public void printStackTrace(Throwable arg0) {
++		System.out.println(arg0);
++	}
++
++	public void println() {
++
++	}
++
++	public void println(Object arg0) {
++		System.out.println(arg0);
++	}
++
++	public void print(Object o) {
++		// TODO Auto-generated method stub
++
++	}
++
++	public void printDictionary(Dictionary<?, ?> dic, String title) {
++		// TODO Auto-generated method stub
++
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/helper/StringParaToKenizer.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/helper/StringParaToKenizer.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/helper/StringParaToKenizer.java	(版本 502)
+@@ -0,0 +1,178 @@
++package com.tongtech.edge.tools.helper;
++
++import java.io.Serializable;
++import java.util.Enumeration;
++import java.util.NoSuchElementException;
++
++public class StringParaToKenizer implements Serializable, Enumeration<Object> {
++
++	private static final long serialVersionUID = 1L;
++	private int currentPosition;
++	private int newPosition;
++	private int maxPosition;
++	private String str;
++	private String delimiters;
++	private boolean retDelims;
++	private boolean delimsChanged;
++	private int maxDelimCodePoint;
++	private boolean hasSurrogates = false;
++	private int[] delimiterCodePoints;
++
++	private void setMaxDelimCodePoint() {
++		if (delimiters == null) {
++			maxDelimCodePoint = 0;
++			return;
++		}
++		int m = 0;
++		int c;
++		int count = 0;
++		for (int i = 0; i < delimiters.length(); i += Character.charCount(c)) {
++			c = delimiters.charAt(i);
++			if (c >= Character.MIN_HIGH_SURROGATE
++					&& c <= Character.MAX_LOW_SURROGATE) {
++				c = delimiters.codePointAt(i);
++				hasSurrogates = true;
++			}
++			if (m < c)
++				m = c;
++			count++;
++		}
++		maxDelimCodePoint = m;
++
++		if (hasSurrogates) {
++			delimiterCodePoints = new int[count];
++			for (int i = 0, j = 0; i < count; i++, j += Character.charCount(c)) {
++				c = delimiters.codePointAt(j);
++				delimiterCodePoints[i] = c;
++			}
++		}
++	}
++
++	public StringParaToKenizer(String str, String delim, boolean returnDelims) {
++		currentPosition = 0;
++		newPosition = -1;
++		delimsChanged = false;
++		this.str = str;
++		maxPosition = str.length();
++		delimiters = delim;
++		retDelims = returnDelims;
++		setMaxDelimCodePoint();
++	}
++
++	public StringParaToKenizer(String str, String delim) {
++		this(str, delim, false);
++	}
++
++	public StringParaToKenizer(String str) {
++		this(str, " \t\n\r\f", false);
++	}
++
++	private int skipDelimiters(int startPos) {
++		if (delimiters == null)
++			throw new NullPointerException();
++
++		int position = startPos;
++		while (!retDelims && position < maxPosition) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c > maxDelimCodePoint) || (delimiters.indexOf(c) < 0))
++					break;
++				position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c > maxDelimCodePoint) || !isDelimiter(c)) {
++					break;
++				}
++				position += Character.charCount(c);
++			}
++		}
++		return position;
++	}
++
++	private int scanToken(int startPos) {
++		int position = startPos;
++		while (position < maxPosition) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c <= maxDelimCodePoint) && (delimiters.indexOf(c) >= 0))
++					break;
++				position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c <= maxDelimCodePoint) && isDelimiter(c))
++					break;
++				position += Character.charCount(c);
++			}
++		}
++		if (retDelims && (startPos == position)) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c <= maxDelimCodePoint) && (delimiters.indexOf(c) >= 0))
++					position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c <= maxDelimCodePoint) && isDelimiter(c))
++					position += Character.charCount(c);
++			}
++		}
++		return position;
++	}
++
++	private boolean isDelimiter(int codePoint) {
++		for (int i = 0; i < delimiterCodePoints.length; i++) {
++			if (delimiterCodePoints[i] == codePoint) {
++				return true;
++			}
++		}
++		return false;
++	}
++
++	public boolean hasMoreTokens() {
++		newPosition = skipDelimiters(currentPosition);
++		return (newPosition < maxPosition);
++	}
++
++	public String nextToken() {
++
++		currentPosition = (newPosition >= 0 && !delimsChanged) ? newPosition
++				: skipDelimiters(currentPosition);
++
++		delimsChanged = false;
++		newPosition = -1;
++		if (currentPosition >= maxPosition)
++			throw new NoSuchElementException();
++		int start = currentPosition;
++		currentPosition = scanToken(currentPosition);
++		return str.substring(start, currentPosition);
++	}
++
++	public String nextToken(String delim) {
++		delimiters = delim;
++
++		delimsChanged = true;
++
++		setMaxDelimCodePoint();
++		return nextToken();
++	}
++
++	public boolean hasMoreElements() {
++		return hasMoreTokens();
++	}
++
++	public Object nextElement() {
++		return nextToken();
++	}
++
++	public int countTokens() {
++		int count = 0;
++		int currpos = currentPosition;
++		while (currpos < maxPosition) {
++			currpos = skipDelimiters(currpos);
++			if (currpos >= maxPosition)
++				break;
++			currpos = scanToken(currpos);
++			count++;
++		}
++		return count;
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/GPIOImpl.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/GPIOImpl.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/GPIOImpl.java	(版本 502)
+@@ -0,0 +1,55 @@
++package com.tongtech.edge.tools.rmiserverimpl;
++
++import java.rmi.RemoteException;
++import java.util.Iterator;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.eclipse.osgi.framework.console.CommandProvider;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.ServiceReference;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++import com.tongtech.edge.tools.diagnostics.GPIOAppCommandProvider;
++import com.tongtech.edge.tools.rmiserver.Activator;
++import com.tongtech.edge.tools.rmiserver.GPIO;
++
++public class GPIOImpl implements GPIO {
++	private GPIOAppCommandProvider command = null;
++
++	public GPIOImpl() {
++		setCommand();
++	}
++
++	@Override
++	public Object testGPI(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		return command._testGPI(intp);
++	}
++
++	@Override
++	public Object setGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		return command._setGPO(intp);
++	}
++
++	@Override
++	public Object flashGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		return command._flashGPO(intp);
++	}
++
++	private void setCommand() {
++		BundleContext context = Activator.getContext();
++		Iterator<ServiceReference<CommandProvider>> iterator = Activator
++				.getServiceReferences().iterator();
++		while (iterator.hasNext()) {
++			ServiceReference<CommandProvider> serviceCommand = iterator.next();
++			CommandProvider commandProvider = context
++					.getService(serviceCommand);
++			if (commandProvider instanceof GPIOAppCommandProvider) {
++				this.command = (GPIOAppCommandProvider) commandProvider;
++			}
++		}
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/GPISimulatorImpl.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/GPISimulatorImpl.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/GPISimulatorImpl.java	(版本 502)
+@@ -0,0 +1,60 @@
++package com.tongtech.edge.tools.rmiserverimpl;
++
++import java.rmi.RemoteException;
++import java.util.Iterator;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.eclipse.osgi.framework.console.CommandProvider;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.ServiceReference;
++
++import com.tongtech.edge.tools.diagnostics.GPISimulatorAppCommandProvider;
++import com.tongtech.edge.tools.rmiserver.Activator;
++import com.tongtech.edge.tools.rmiserver.GPISimulator;
++
++public class GPISimulatorImpl implements GPISimulator {
++	GPISimulatorAppCommandProvider command = null;
++
++	public GPISimulatorImpl() {
++		setCommand();
++	}
++
++	@Override
++	public Object simulatorGPIHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException {
++		return command._simGPIHigh(intp);
++	}
++
++	@Override
++	public Object simulatorGPILow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException {
++		return command._simGPILow(intp);
++	}
++
++	@Override
++	public Object simulatorGPIFlashHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException {
++		return command._simGPIFlashHigh(intp);
++	}
++
++	@Override
++	public Object simulatorGPIFlashLow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException {
++		return command._simGPIFlashLow(intp);
++	}
++
++	private void setCommand() {
++		BundleContext context = Activator.getContext();
++		Iterator<ServiceReference<CommandProvider>> iterator = Activator
++				.getServiceReferences().iterator();
++		while (iterator.hasNext()) {
++			ServiceReference<CommandProvider> serviceCommand = iterator.next();
++			CommandProvider commandProvider = context
++					.getService(serviceCommand);
++			if (commandProvider instanceof GPISimulatorAppCommandProvider) {
++				this.command = (GPISimulatorAppCommandProvider) commandProvider;
++			}
++		}
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/SerialImpl.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/SerialImpl.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/SerialImpl.java	(版本 502)
+@@ -0,0 +1,52 @@
++package com.tongtech.edge.tools.rmiserverimpl;
++
++import java.rmi.RemoteException;
++import java.util.Iterator;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.eclipse.osgi.framework.console.CommandProvider;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.ServiceReference;
++
++import com.tongtech.edge.tools.diagnostics.SerialCommandProvider;
++import com.tongtech.edge.tools.rmiserver.Activator;
++import com.tongtech.edge.tools.rmiserver.Serial;
++
++public class SerialImpl implements Serial {
++	SerialCommandProvider command = null;
++
++	public SerialImpl() {
++		setCommand();
++	}
++
++	@Override
++	public Object listSerial(CommandInterpreter intp) throws RemoteException {
++		return command._listSerial(intp);
++	}
++
++	@Override
++	public Object connectSerial(CommandInterpreter intp)
++			throws RemoteException, Exception {
++		return command._connectSerial(intp);
++	}
++
++	@Override
++	public Object disconnectSerial(CommandInterpreter intp)
++			throws RemoteException {
++		return command._disconnectSerial(intp);
++	}
++
++	private void setCommand() {
++		BundleContext context = Activator.getContext();
++		Iterator<ServiceReference<CommandProvider>> iterator = Activator
++				.getServiceReferences().iterator();
++		while (iterator.hasNext()) {
++			ServiceReference<CommandProvider> serviceCommand = iterator.next();
++			CommandProvider commandProvider = context
++					.getService(serviceCommand);
++			if (commandProvider instanceof SerialCommandProvider) {
++				this.command = (SerialCommandProvider) commandProvider;
++			}
++		}
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/TagGeneratorImpl.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/TagGeneratorImpl.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/TagGeneratorImpl.java	(版本 502)
+@@ -0,0 +1,40 @@
++package com.tongtech.edge.tools.rmiserverimpl;
++
++import java.rmi.RemoteException;
++import java.util.Iterator;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.eclipse.osgi.framework.console.CommandProvider;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.ServiceReference;
++
++import com.tongtech.edge.tools.diagnostics.TagGeneratorCommandProvider;
++import com.tongtech.edge.tools.rmiserver.Activator;
++import com.tongtech.edge.tools.rmiserver.TagGenerator;
++
++public class TagGeneratorImpl implements TagGenerator {
++	private TagGeneratorCommandProvider command = null;
++
++	public TagGeneratorImpl() {
++		setCommand();
++	}
++
++	@Override
++	public Object generatorTag(CommandInterpreter intp) throws RemoteException {
++		return command._startTagRunner(intp);
++	}
++
++	private void setCommand() {
++		BundleContext context = Activator.getContext();
++		Iterator<ServiceReference<CommandProvider>> iterator = Activator
++				.getServiceReferences().iterator();
++		while (iterator.hasNext()) {
++			ServiceReference<CommandProvider> serviceCommand = iterator.next();
++			CommandProvider commandProvider = context
++					.getService(serviceCommand);
++			if (commandProvider instanceof TagGeneratorCommandProvider) {
++				this.command = (TagGeneratorCommandProvider) commandProvider;
++			}
++		}
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/TagAppImpl.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/TagAppImpl.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserverimpl/TagAppImpl.java	(版本 502)
+@@ -0,0 +1,53 @@
++package com.tongtech.edge.tools.rmiserverimpl;
++
++import java.rmi.RemoteException;
++import java.util.Iterator;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.eclipse.osgi.framework.console.CommandProvider;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.ServiceReference;
++
++import com.espertech.esper.client.EPStatementException;
++import com.tongtech.edge.tools.diagnostics.TagAppCommandProvider;
++import com.tongtech.edge.tools.rmiserver.Activator;
++import com.tongtech.edge.tools.rmiserver.TagApp;
++
++public class TagAppImpl implements TagApp {
++	private TagAppCommandProvider command = null;
++
++	public TagAppImpl() {
++		setCommand();
++	}
++
++	@Override
++	public Object recentTags(CommandInterpreter intp) throws RemoteException {
++		return command._recenttags(intp);
++	}
++
++	@Override
++	public Object currentTags(CommandInterpreter intp) throws RemoteException {
++		return command._currenttags(intp);
++	}
++
++	@Override
++	public Object tagRate(CommandInterpreter intp) throws RemoteException,
++			EPStatementException {
++		return command._tagrate(intp);
++	}
++
++	private void setCommand() {
++		BundleContext context = Activator.getContext();
++		Iterator<ServiceReference<CommandProvider>> iterator = Activator
++				.getServiceReferences().iterator();
++		while (iterator.hasNext()) {
++			ServiceReference<CommandProvider> serviceCommand = iterator.next();
++			CommandProvider commandProvider = context
++					.getService(serviceCommand);
++			if (commandProvider instanceof TagAppCommandProvider) {
++				this.command = (TagAppCommandProvider) commandProvider;
++			}
++		}
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/GPISimulator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/GPISimulator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/GPISimulator.java	(版本 502)
+@@ -0,0 +1,20 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface GPISimulator extends Remote {
++	public Object simulatorGPIHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPILow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPIFlashHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPIFlashLow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Serial.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Serial.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Serial.java	(版本 502)
+@@ -0,0 +1,16 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface Serial extends Remote {
++	public Object listSerial(CommandInterpreter intp) throws RemoteException;
++
++	public Object connectSerial(CommandInterpreter intp)
++			throws RemoteException, Exception;
++
++	public Object disconnectSerial(CommandInterpreter intp)
++			throws RemoteException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/TagGenerator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/TagGenerator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/TagGenerator.java	(版本 502)
+@@ -0,0 +1,10 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface TagGenerator extends Remote {
++	public Object generatorTag(CommandInterpreter intp) throws RemoteException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Activator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Activator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Activator.java	(版本 502)
+@@ -0,0 +1,66 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.util.Collection;
++
++import org.eclipse.osgi.framework.console.CommandProvider;
++import org.osgi.framework.BundleActivator;
++import org.osgi.framework.BundleContext;
++import org.osgi.framework.InvalidSyntaxException;
++import org.osgi.framework.ServiceReference;
++import org.springframework.context.support.ClassPathXmlApplicationContext;
++
++public class Activator implements BundleActivator {
++	private static Collection<ServiceReference<CommandProvider>> serviceReferences = null;
++
++	private static BundleContext context;
++
++	public static BundleContext getContext() {
++		return context;
++	}
++
++	/*
++	 * (non-Javadoc)
++	 * 
++	 * @see
++	 * org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext
++	 * )
++	 */
++	public void start(BundleContext bundleContext) throws Exception {
++		Activator.context = bundleContext;
++		setServiceRefrences();
++		new Thread(new Runnable() {
++			@Override
++			public void run() {
++				Thread.currentThread().setContextClassLoader(
++						getClass().getClassLoader());
++				ClassPathXmlApplicationContext osgiContext = new ClassPathXmlApplicationContext(
++						"rmiserver.xml");
++				osgiContext.refresh();
++			}
++		}).start();
++	}
++
++	/*
++	 * (non-Javadoc)
++	 * 
++	 * @see
++	 * org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
++	 */
++	public void stop(BundleContext bundleContext) throws Exception {
++		Activator.context = null;
++	}
++
++	private void setServiceRefrences() {
++		try {
++			serviceReferences = Activator.context.getServiceReferences(
++					CommandProvider.class, null);
++		} catch (InvalidSyntaxException e) {
++			e.printStackTrace();
++		}
++	}
++
++	public static Collection<ServiceReference<CommandProvider>> getServiceReferences() {
++		return serviceReferences;
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/TagApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/TagApp.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/TagApp.java	(版本 502)
+@@ -0,0 +1,17 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++import com.espertech.esper.client.EPStatementException;
++
++public interface TagApp extends Remote {
++	public Object recentTags(CommandInterpreter intp) throws RemoteException;
++
++	public Object currentTags(CommandInterpreter intp) throws RemoteException;
++
++	public Object tagRate(CommandInterpreter intp) throws RemoteException,
++			EPStatementException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/GPIO.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/GPIO.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/GPIO.java	(版本 502)
+@@ -0,0 +1,19 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++
++public interface GPIO extends Remote {
++	public Object testGPI(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++
++	public Object setGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++
++	public Object flashGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++}
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/build.properties
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/build.properties	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/build.properties	(版本 502)
+@@ -0,0 +1,4 @@
++source.. = src/
++output.. = bin/
++bin.includes = META-INF/,\
++               .
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.settings/org.eclipse.jdt.core.prefs
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.settings/org.eclipse.jdt.core.prefs	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.settings/org.eclipse.jdt.core.prefs	(版本 502)
+@@ -0,0 +1,7 @@
++eclipse.preferences.version=1
++org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
++org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.6
++org.eclipse.jdt.core.compiler.compliance=1.6
++org.eclipse.jdt.core.compiler.problem.assertIdentifier=error
++org.eclipse.jdt.core.compiler.problem.enumIdentifier=error
++org.eclipse.jdt.core.compiler.source=1.6
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.settings/org.eclipse.pde.core.prefs
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.settings/org.eclipse.pde.core.prefs	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/.settings/org.eclipse.pde.core.prefs	(版本 502)
+@@ -0,0 +1,4 @@
++eclipse.preferences.version=1
++pluginProject.equinox=false
++pluginProject.extensions=false
++resolve.requirebundle=false
+
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.classpath
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.classpath	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.classpath	(版本 505)
+@@ -0,0 +1,37 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="src" output="target/classes" path="src/main/java">
++		<attributes>
++			<attribute name="optional" value="true"/>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
++		<attributes>
++			<attribute name="optional" value="true"/>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
++		<attributes>
++			<attribute name="maven.pomderived" value="true"/>
++		</attributes>
++	</classpathentry>
++	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
++	<classpathentry kind="output" path="target/classes"/>
++</classpath>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.project
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.project	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.project	(版本 505)
+@@ -0,0 +1,23 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>com.tongtech.edge.tools.junittest</name>
++	<comment></comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.m2e.core.maven2Builder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++		<nature>org.eclipse.m2e.core.maven2Nature</nature>
++	</natures>
++</projectDescription>
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/lib/com.tongtech.edge_5.4.0.jar
+===================================================================
+无法显示: 文件标记为二进制类型。
+svn:mime-type = application/octet-stream
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/lib/com.tongtech.edge_5.4.0.jar
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/lib/com.tongtech.edge_5.4.0.jar	(版本 504)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/lib/com.tongtech.edge_5.4.0.jar	(版本 505)
+
+ 属性改变: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/lib/com.tongtech.edge_5.4.0.jar
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/octet-stream
+\ No newline at end of property
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/maven/com.tongtech.edge.tools.junittest/com.tongtech.edge.tools.junittest/pom.properties
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/maven/com.tongtech.edge.tools.junittest/com.tongtech.edge.tools.junittest/pom.properties	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/maven/com.tongtech.edge.tools.junittest/com.tongtech.edge.tools.junittest/pom.properties	(版本 505)
+@@ -0,0 +1,7 @@
++#Generated by Maven Integration for Eclipse
++#Sun Jun 09 18:08:51 CST 2013
++version=0.0.1-SNAPSHOT
++groupId=com.tongtech.edge.tools.junittest
++m2e.projectName=com.tongtech.edge.tools.junittest
++m2e.projectLocation=C\:\\Users\\Administrator\\Desktop\\TI-EDGE Server\\com.tongtech.edge.tools.junittest
++artifactId=com.tongtech.edge.tools.junittest
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/maven/com.tongtech.edge.tools.junittest/com.tongtech.edge.tools.junittest/pom.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/maven/com.tongtech.edge.tools.junittest/com.tongtech.edge.tools.junittest/pom.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/maven/com.tongtech.edge.tools.junittest/com.tongtech.edge.tools.junittest/pom.xml	(版本 505)
+@@ -0,0 +1,65 @@
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++	<modelVersion>4.0.0</modelVersion>
++	<groupId>com.tongtech.edge.tools.junittest</groupId>
++	<artifactId>com.tongtech.edge.tools.junittest</artifactId>
++	<version>0.0.1-SNAPSHOT</version>
++	<description>com.tongtech.edge.tools.junittest</description>
++	<properties>
++		<EDGEHOME>${basedir}/../../TI-EDGE Server/TI-EDGE-SDK/edge</EDGEHOME>
++	</properties>
++	<dependencies>
++		<dependency>
++			<groupId>com.tongtech.edge.tools</groupId>
++			<artifactId>com.tongtech.edge.tools</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.eclipse</groupId>
++			<artifactId>org.eclipse.osgi</artifactId>
++			<version>3.8.0.v20120529-1548</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-beans</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge</groupId>
++			<artifactId>com.tongtech.edge</artifactId>
++			<version>5.4.0</version>
++			<scope>system</scope>
++			<systemPath>${basedir}\lib\com.tongtech.edge_5.4.0.jar</systemPath>
++		</dependency>
++		<dependency>
++			<groupId>org.rxtx</groupId>
++			<artifactId>rxtx</artifactId>
++			<version>2.1.7</version>
++		</dependency>
++		<dependency>
++			<groupId>com.espertech</groupId>
++			<artifactId>esper</artifactId>
++			<version>4.7.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-context</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.springsource</groupId>
++			<artifactId>com.springsource.org.aopalliance</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge.api</groupId>
++			<artifactId>com.tongtech.edge.api</artifactId>
++			<version>1.3.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.apache.ant</groupId>
++			<artifactId>ant-junit4</artifactId>
++			<version>1.9.1</version>
++		</dependency>
++	</dependencies>
++</project>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/MANIFEST.MF
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/MANIFEST.MF	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/META-INF/MANIFEST.MF	(版本 505)
+@@ -0,0 +1,5 @@
++Manifest-Version: 1.0
++Built-By: Administrator
++Build-Jdk: 1.6.0_27
++Created-By: Maven Integration for Eclipse
++
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/rmiclient.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/rmiclient.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/target/classes/rmiclient.xml	(版本 505)
+@@ -0,0 +1,45 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
++    "http://www.springframework.org/dtd/spring-beans.dtd">
++<beans>
++	<bean id="GPIOService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPIOService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPIO</value>
++		</property>
++	</bean>
++	<bean id="GPISimulatorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPISimulatorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPISimulator</value>
++		</property>
++	</bean>
++	<bean id="SerialService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/SerialService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.Serial</value>
++		</property>
++	</bean>
++	<bean id="TagGeneratorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagGeneratorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagGenerator</value>
++		</property>
++	</bean>
++	<bean id="TagAppService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagAppService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagApp</value>
++		</property>
++	</bean>
++</beans>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorFlashLowTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorFlashLowTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorFlashLowTest.java	(版本 505)
+@@ -0,0 +1,57 @@
++package com.tongtech.edge.tools.gpisimulator;
++
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.GPISimulatorClient;
++
++public class GPISimulatorFlashLowTest {
++	private String readerID = "Alien_1 ";
++	private String seconds = "10 ";
++	private String GPIPort = "3";
++	private String para = null;
++	private GPISimulatorClient gpiSimulatorClient;
++
++	public GPISimulatorFlashLowTest() {
++		gpiSimulatorClient = new GPISimulatorClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException {
++		para = readerID + seconds + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPILow(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testReaderIDNotExist() throws RemoteException {
++		String readerID = "noAlien_1 ";
++		para = readerID + seconds + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPILow(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testIncorrectTime() throws RemoteException {
++		String seconds = "F ";
++		para = readerID + seconds + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPILow(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testGPIPortNotExist() throws RemoteException {
++		String GPIPort = "f"; /* GPIPort:numeric string */
++		para = readerID + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPILow(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testOnlyReaderIDInput() throws RemoteException {
++		Object object = gpiSimulatorClient.simulatorFlashGPILow(readerID);
++		assertTrue(object == null);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorHighTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorHighTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorHighTest.java	(版本 505)
+@@ -0,0 +1,47 @@
++package com.tongtech.edge.tools.gpisimulator;
++
++import static org.junit.Assert.*;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.GPISimulatorClient;
++
++public class GPISimulatorHighTest {
++	private String readerID = "Alien_1 ";
++	private String GPIPort = "3";
++	private String para = null;
++	private GPISimulatorClient gpiSimulatorClient;
++
++	public GPISimulatorHighTest() {
++		gpiSimulatorClient = new GPISimulatorClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException {
++		para = readerID + GPIPort;
++		Object object = gpiSimulatorClient.simulatorGPIHigh(para);
++		assertNull(object);
++	}
++
++	@Test
++	public void testReaderIDNotExist() throws RemoteException {
++		String readerID = "noAlien_1 ";
++		para = readerID + GPIPort;
++		Object object = gpiSimulatorClient.simulatorGPIHigh(para);
++		assertNull(object);
++	}
++
++	@Test(expected = NumberFormatException.class)
++	public void testGPIPortNotExist() throws RemoteException {
++		String GPIPort = "f"; /* GPIPort:0-3 */
++		para = readerID + GPIPort;
++		gpiSimulatorClient.simulatorGPIHigh(para);
++	}
++
++	@Test
++	public void testNoGPIPortInput() throws RemoteException {
++		Object object = gpiSimulatorClient.simulatorGPIHigh(readerID);
++		assertNull(object);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorLowTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorLowTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorLowTest.java	(版本 505)
+@@ -0,0 +1,48 @@
++package com.tongtech.edge.tools.gpisimulator;
++
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.GPISimulatorClient;
++
++public class GPISimulatorLowTest {
++	private String readerID = "Alien_1 ";
++	private String GPIPort = "3";
++	private String para = null;
++	private GPISimulatorClient gpiSimulatorClient;
++
++	public GPISimulatorLowTest() {
++		gpiSimulatorClient = new GPISimulatorClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException {
++		para = readerID + GPIPort;
++		Object object = gpiSimulatorClient.simulatorGPILow(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testReaderIDNotExist() throws RemoteException {
++		String readerID = "noAlien_1 ";
++		para = readerID + GPIPort;
++		Object object = gpiSimulatorClient.simulatorGPILow(para);
++		assertTrue(object == null);
++	}
++
++	@Test(expected = NumberFormatException.class)
++	public void testGPIPortNotExist() throws RemoteException,
++			NumberFormatException {
++		String GPIPort = "f"; /* GPIPort:numeric */
++		para = readerID + GPIPort;
++		gpiSimulatorClient.simulatorGPILow(para);
++	}
++
++	@Test
++	public void testNoGPIPortInput() throws RemoteException {
++		Object object = gpiSimulatorClient.simulatorGPILow(readerID);
++		assertTrue(object == null);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorFlashHighTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorFlashHighTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpisimulator/GPISimulatorFlashHighTest.java	(版本 505)
+@@ -0,0 +1,51 @@
++package com.tongtech.edge.tools.gpisimulator;
++
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.GPISimulatorClient;
++
++public class GPISimulatorFlashHighTest {
++	private String readerID = "Alien_1 ";
++	private String seconds = "10 ";
++	private String GPIPort = "3";
++	private String para = null;
++	private GPISimulatorClient gpiSimulatorClient;
++
++	public GPISimulatorFlashHighTest() {
++		gpiSimulatorClient = new GPISimulatorClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException {
++		para = readerID + seconds + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPIHigh(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testReaderIDNotExist() throws RemoteException {
++		String readerID = "noAlien_1 ";
++		para = readerID + seconds + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPIHigh(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testIncorrectTime() throws RemoteException {
++		String time = "F ";
++		para = readerID + time + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPIHigh(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testGPIPortNotExist() throws RemoteException {
++		String GPIPort = "f"; /* GPIPort:numeric */
++		para = readerID + GPIPort;
++		Object object = gpiSimulatorClient.simulatorFlashGPIHigh(para);
++		assertTrue(object == null);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/ListSerialPortTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/ListSerialPortTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/ListSerialPortTest.java	(版本 505)
+@@ -0,0 +1,21 @@
++package com.tongtech.edge.tools.serial;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.SerialClient;
++
++public class ListSerialPortTest {
++
++	private SerialClient serialClient;
++
++	public ListSerialPortTest() {
++		serialClient = new SerialClient();
++	}
++
++	@Test
++	public void testListSerialPort() throws RemoteException {
++		String para = "";
++		Integer num = (Integer) serialClient.listSerial(para);
++		assert (num != 0);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/ConnectSerialTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/ConnectSerialTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/ConnectSerialTest.java	(版本 505)
+@@ -0,0 +1,44 @@
++package com.tongtech.edge.tools.serial;
++
++import static org.junit.Assert.assertTrue;
++import gnu.io.NoSuchPortException;
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.SerialClient;
++
++public class ConnectSerialTest {
++	private String port = "COM5 ";
++	private String baud = "9600 ";
++	private String dataBits = "8 ";
++	private String stopBit = "1 ";
++	private String parity = "0";
++	private SerialClient serialClient;
++
++	public ConnectSerialTest() {
++		serialClient = new SerialClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException, NoSuchPortException {
++		String para = port + baud + dataBits + stopBit + parity;
++		Object object = serialClient.connectSerial(para);
++		assertTrue(object == null);
++	}
++
++	@Test(expected = NoSuchPortException.class)
++	public void testSerialPortNotExist() throws RemoteException,
++			NoSuchPortException {
++		String serialPort = "COM20 ";
++		String para = serialPort + baud + dataBits + stopBit + parity;
++		Object object = serialClient.connectSerial(para);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testNoNumericBaud() throws RemoteException, NoSuchPortException {
++		String baud = "noneNumericBaud ";
++		String para = port + baud + dataBits + stopBit + parity;
++		Object object = serialClient.connectSerial(para);
++		assertTrue(object == null);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/DisConnectSerialTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/DisConnectSerialTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/serial/DisConnectSerialTest.java	(版本 505)
+@@ -0,0 +1,23 @@
++package com.tongtech.edge.tools.serial;
++
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.SerialClient;
++
++public class DisConnectSerialTest {
++
++	private SerialClient serialClient;
++
++	public DisConnectSerialTest() {
++		serialClient = new SerialClient();
++	}
++
++	@Test
++	public void testDisConnectSerial() throws RemoteException {
++		String para = "";
++		Object object = serialClient.disconnectSerial(para);
++		assertTrue(object == null);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/taggenerator/TagGeneratorTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/taggenerator/TagGeneratorTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/taggenerator/TagGeneratorTest.java	(版本 505)
+@@ -0,0 +1,43 @@
++package com.tongtech.edge.tools.taggenerator;
++
++import static org.junit.Assert.assertNull;
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.tools.rmiclient.TagGeneratorClient;
++
++public class TagGeneratorTest {
++
++	private String tagSetId = "parent ";
++	private String exposureId = "1";
++	private TagGeneratorClient tagGeneratorClient;
++
++	public TagGeneratorTest() {
++		tagGeneratorClient = new TagGeneratorClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException {
++		String para = tagSetId + exposureId;
++		Object object = tagGeneratorClient.tagGenerator(para);
++		assertTrue(object != null);
++	}
++
++	@Test
++	public void testTagSetIdNotExist() throws RemoteException {
++		String tagSetId = "noTagSetId ";
++		String para = tagSetId + exposureId;
++		Object object = tagGeneratorClient.tagGenerator(para);
++		assertNull(object);
++	}
++
++	@Test
++	public void testExposureIdNotExist() throws RemoteException {
++		String exposureId = "noexposureid";
++		String para = tagSetId + exposureId;
++		Object object = tagGeneratorClient.tagGenerator(para);
++		assertNull(object);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/RecentTagsTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/RecentTagsTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/RecentTagsTest.java	(版本 505)
+@@ -0,0 +1,37 @@
++package com.tongtech.edge.tools.tagapp;
++
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++import java.util.List;
++
++import org.junit.Test;
++
++import com.tongtech.edge.notification.TagReadEvent;
++import com.tongtech.edge.tools.rmiclient.TagAppClient;
++
++public class RecentTagsTest {
++	private TagAppClient tagAppClient;
++	private List<TagReadEvent> currentTags = null;
++
++	public RecentTagsTest() {
++		tagAppClient = new TagAppClient();
++	}
++
++	@SuppressWarnings("unchecked")
++	@Test
++	public void testNormal() throws RemoteException {
++		String readerID = "Alien_1";
++		currentTags = (List<TagReadEvent>) tagAppClient.recentTags(readerID);
++		assertTrue(currentTags.size() != 0);
++	}
++
++	@SuppressWarnings("unchecked")
++	@Test
++	public void testReaderIDNotExist() throws RemoteException {
++		String readerID = "noAlien_1";
++		currentTags = (List<TagReadEvent>) tagAppClient.recentTags(readerID);
++		assertTrue (currentTags.size() == 0);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/CurrentTagsTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/CurrentTagsTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/CurrentTagsTest.java	(版本 505)
+@@ -0,0 +1,38 @@
++package com.tongtech.edge.tools.tagapp;
++
++import static org.junit.Assert.assertTrue;
++
++import java.rmi.RemoteException;
++import java.util.List;
++
++import org.junit.Test;
++
++import com.tongtech.edge.notification.TagReadEvent;
++import com.tongtech.edge.tools.rmiclient.TagAppClient;
++
++public class CurrentTagsTest {
++
++	private TagAppClient tagAppClient;
++	private List<TagReadEvent> currentTags;
++
++	public CurrentTagsTest() {
++		tagAppClient = new TagAppClient();
++	}
++
++	@SuppressWarnings("unchecked")
++	@Test
++	public void testNormal() throws RemoteException {
++		String readerID = "Alien_1";
++		currentTags = (List<TagReadEvent>) tagAppClient.currentTags(readerID);
++		assertTrue(currentTags.size() != 0);
++	}
++
++	@SuppressWarnings("unchecked")
++	@Test
++	public void testReaderIDNotExist() throws RemoteException {
++		String readerID = "noAlien_1";
++		currentTags = (List<TagReadEvent>) tagAppClient.currentTags(readerID);
++		assertTrue(currentTags.size() == 0);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/TagRateTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/TagRateTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/tagapp/TagRateTest.java	(版本 505)
+@@ -0,0 +1,30 @@
++package com.tongtech.edge.tools.tagapp;
++
++import static org.junit.Assert.assertTrue;
++
++import org.junit.Test;
++import java.rmi.RemoteException;
++import com.espertech.esper.client.EPStatementException;
++import com.tongtech.edge.tools.rmiclient.TagAppClient;
++
++public class TagRateTest {
++
++	private TagAppClient tagAppClient;
++
++	public TagRateTest() {
++		tagAppClient = new TagAppClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException {
++		String time = "5";
++		Object object = tagAppClient.tagRate(time);
++		assertTrue(object == null);
++	}
++
++	@Test(expected = EPStatementException.class)
++	public void testNotNumericTime() throws RemoteException {
++		String time = "F";
++		tagAppClient.tagRate(time);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/TestGPITest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/TestGPITest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/TestGPITest.java	(版本 505)
+@@ -0,0 +1,51 @@
++package com.tongtech.edge.tools.gpio;
++
++import static org.junit.Assert.*;
++
++import java.rmi.RemoteException;
++
++import org.junit.Test;
++import com.tongtech.edge.sensors.CannotExecuteException;
++import com.tongtech.edge.tools.rmiclient.GPIOClient;
++
++public class TestGPITest {
++	private String readerID = "Alien_1 ";
++	private String GPIPort = "3";
++	private GPIOClient gpioClient;
++
++	public TestGPITest() {
++		gpioClient = new GPIOClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException, NumberFormatException,
++			CannotExecuteException {
++		String para = readerID + GPIPort;
++		Boolean gpi = (Boolean) gpioClient.testGPI(para);
++		assert (gpi.equals(false) || gpi.equals(true));
++	}
++
++	@Test(expected = CannotExecuteException.class)
++	public void testReaderIDNotExist() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		String readerID = "noAlien_1 ";
++		String para = readerID + GPIPort;
++		gpioClient.testGPI(para);
++	}
++
++	@Test(expected = NumberFormatException.class)
++	public void testGPIPortNotExist() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		String GPIPort = "none";
++		String para = readerID + GPIPort;
++		gpioClient.testGPI(para);
++	}
++
++	@Test
++	public void testNoGPIPortInput() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		Object object = gpioClient.testGPI(readerID);
++		assertTrue(object == null);
++	}
++
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/SetGPOTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/SetGPOTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/SetGPOTest.java	(版本 505)
+@@ -0,0 +1,51 @@
++package com.tongtech.edge.tools.gpio;
++
++import static org.junit.Assert.*;
++
++import java.rmi.RemoteException;
++
++import org.junit.Test;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++import com.tongtech.edge.tools.rmiclient.GPIOClient;
++
++public class SetGPOTest {
++	private String readerID = "Alien_1 ";
++	private String GPOPort = "5";
++	private GPIOClient gpioClient;
++
++	public SetGPOTest() {
++		gpioClient = new GPIOClient();
++	}
++
++	@Test
++	public void testnNrmal() throws RemoteException, NumberFormatException,
++			CannotExecuteException {
++		String para = readerID + GPOPort;
++		Object object = gpioClient.setGPO(para);
++		assertTrue(object == null);
++	}
++
++	public void testReaderIDNotExist() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		String readerID = "noAlien_1 ";
++		String para = readerID + GPOPort;
++		Object object = gpioClient.setGPO(para);
++		assertTrue(object == null);
++	}
++
++	@Test(expected = NumberFormatException.class)
++	public void testGPOPortNotExist() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		String GPOPort = "none";
++		String para = readerID + GPOPort;
++		gpioClient.setGPO(para);
++	}
++
++	@Test
++	public void testNoGPOPortInput() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		Object object = gpioClient.setGPO(readerID);
++		assertTrue(object == null);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/FlashGPOTest.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/FlashGPOTest.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/test/java/com/tongtech/edge/tools/gpio/FlashGPOTest.java	(版本 505)
+@@ -0,0 +1,51 @@
++package com.tongtech.edge.tools.gpio;
++
++import static org.junit.Assert.*;
++
++import java.rmi.RemoteException;
++import org.junit.Test;
++import com.tongtech.edge.sensors.CannotExecuteException;
++import com.tongtech.edge.tools.rmiclient.GPIOClient;
++
++public class FlashGPOTest {
++	private String readerID = "Alien_1 ";
++	private String GPOPort = "5";
++	private GPIOClient gpioClient;
++
++	public FlashGPOTest() {
++		gpioClient = new GPIOClient();
++	}
++
++	@Test
++	public void testNormal() throws RemoteException, NumberFormatException,
++			CannotExecuteException {
++		String para = readerID + GPOPort;
++		Object object = gpioClient.flashGPO(para);
++		System.out.println(object);
++		assertTrue(object == null);
++	}
++
++	@Test
++	public void testReaderIDNotExist() throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		String readerID = "noAlien ";
++		String para = readerID + GPOPort;
++		Object object = gpioClient.flashGPO(para);
++		assertTrue(object == null);
++	}
++
++	@Test(expected = NumberFormatException.class)
++	public void testGPOPortNotExist() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		String GPOPort = "NoGPO";
++		String para = readerID + GPOPort;
++		gpioClient.flashGPO(para);
++	}
++
++	@Test
++	public void testNoGPOPortInput() throws RemoteException,
++			NumberFormatException, CannotExecuteException {
++		Object object = gpioClient.flashGPO(readerID);
++		assertTrue(object == null);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/rmiclient.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/rmiclient.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/rmiclient.xml	(版本 505)
+@@ -0,0 +1,45 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
++    "http://www.springframework.org/dtd/spring-beans.dtd">
++<beans>
++	<bean id="GPIOService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPIOService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPIO</value>
++		</property>
++	</bean>
++	<bean id="GPISimulatorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/GPISimulatorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.GPISimulator</value>
++		</property>
++	</bean>
++	<bean id="SerialService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/SerialService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.Serial</value>
++		</property>
++	</bean>
++	<bean id="TagGeneratorService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagGeneratorService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagGenerator</value>
++		</property>
++	</bean>
++	<bean id="TagAppService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
++		<property name="serviceUrl">
++			<value>rmi://127.0.0.1:1300/TagAppService</value>
++		</property>
++		<property name="serviceInterface">
++			<value>com.tongtech.edge.tools.rmiserver.TagApp</value>
++		</property>
++	</bean>
++</beans>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/helper/CommandParameter.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/helper/CommandParameter.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/helper/CommandParameter.java	(版本 505)
+@@ -0,0 +1,77 @@
++package com.tongtech.edge.tools.helper;
++
++import java.io.Serializable;
++import java.util.Dictionary;
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++import org.osgi.framework.Bundle;
++
++public class CommandParameter implements CommandInterpreter, Serializable {
++	private static final long serialVersionUID = 1L;
++	private static final String WS_DELIM = " \t\n\r\f";
++	private StringParaToKenizer tok;
++	private String parameter;
++
++	public CommandParameter(String parameter) {
++		this.parameter = parameter;
++		tok = new StringParaToKenizer(this.parameter);
++	}
++
++	public Object execute(String arg0) {
++		return null;
++	}
++
++	public String nextArgument() {
++
++		if (tok == null || !tok.hasMoreElements())
++			return null;
++		String arg = tok.nextToken();
++		if (arg.startsWith("\"")) {//$NON-NLS-1$ 
++			if (arg.endsWith("\"")) { //$NON-NLS-1$ 
++				if (arg.length() >= 2) // strip the beginning and ending quotes
++					return arg.substring(1, arg.length() - 1);
++			}
++			String remainingArg = tok.nextToken("\""); //$NON-NLS-1$ 
++			arg = arg.substring(1) + remainingArg; // skip to next whitespace
++													// separated token
++			tok.nextToken(WS_DELIM);
++		} else if (arg.startsWith("'")) {
++			//$NON-NLS-1$ //$NON-NLS-2$ 
++			if (arg.endsWith("'")) { //$NON-NLS-1$ 
++				if (arg.length() >= 2) // skip the beginning and ending quotes
++					return arg.substring(1, arg.length() - 1);
++			}
++			String remainingArg = tok.nextToken("'"); //$NON-NLS-1$ 
++			arg = arg.substring(1) + remainingArg; // skip to next whitespace
++													// separated token
++			tok.nextToken(WS_DELIM);
++		}
++		return arg;
++
++	}
++
++	public void printBundleResource(Bundle arg0, String arg1) {
++
++	}
++
++	public void printStackTrace(Throwable arg0) {
++		System.out.println(arg0);
++	}
++
++	public void println() {
++
++	}
++
++	public void println(Object arg0) {
++		System.out.println(arg0);
++	}
++
++	public void print(Object o) {
++		// TODO Auto-generated method stub
++
++	}
++
++	public void printDictionary(Dictionary<?, ?> dic, String title) {
++		// TODO Auto-generated method stub
++
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/helper/StringParaToKenizer.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/helper/StringParaToKenizer.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/helper/StringParaToKenizer.java	(版本 505)
+@@ -0,0 +1,178 @@
++package com.tongtech.edge.tools.helper;
++
++import java.io.Serializable;
++import java.util.Enumeration;
++import java.util.NoSuchElementException;
++
++public class StringParaToKenizer implements Serializable, Enumeration<Object> {
++
++	private static final long serialVersionUID = 1L;
++	private int currentPosition;
++	private int newPosition;
++	private int maxPosition;
++	private String str;
++	private String delimiters;
++	private boolean retDelims;
++	private boolean delimsChanged;
++	private int maxDelimCodePoint;
++	private boolean hasSurrogates = false;
++	private int[] delimiterCodePoints;
++
++	private void setMaxDelimCodePoint() {
++		if (delimiters == null) {
++			maxDelimCodePoint = 0;
++			return;
++		}
++		int m = 0;
++		int c;
++		int count = 0;
++		for (int i = 0; i < delimiters.length(); i += Character.charCount(c)) {
++			c = delimiters.charAt(i);
++			if (c >= Character.MIN_HIGH_SURROGATE
++					&& c <= Character.MAX_LOW_SURROGATE) {
++				c = delimiters.codePointAt(i);
++				hasSurrogates = true;
++			}
++			if (m < c)
++				m = c;
++			count++;
++		}
++		maxDelimCodePoint = m;
++
++		if (hasSurrogates) {
++			delimiterCodePoints = new int[count];
++			for (int i = 0, j = 0; i < count; i++, j += Character.charCount(c)) {
++				c = delimiters.codePointAt(j);
++				delimiterCodePoints[i] = c;
++			}
++		}
++	}
++
++	public StringParaToKenizer(String str, String delim, boolean returnDelims) {
++		currentPosition = 0;
++		newPosition = -1;
++		delimsChanged = false;
++		this.str = str;
++		maxPosition = str.length();
++		delimiters = delim;
++		retDelims = returnDelims;
++		setMaxDelimCodePoint();
++	}
++
++	public StringParaToKenizer(String str, String delim) {
++		this(str, delim, false);
++	}
++
++	public StringParaToKenizer(String str) {
++		this(str, " \t\n\r\f", false);
++	}
++
++	private int skipDelimiters(int startPos) {
++		if (delimiters == null)
++			throw new NullPointerException();
++
++		int position = startPos;
++		while (!retDelims && position < maxPosition) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c > maxDelimCodePoint) || (delimiters.indexOf(c) < 0))
++					break;
++				position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c > maxDelimCodePoint) || !isDelimiter(c)) {
++					break;
++				}
++				position += Character.charCount(c);
++			}
++		}
++		return position;
++	}
++
++	private int scanToken(int startPos) {
++		int position = startPos;
++		while (position < maxPosition) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c <= maxDelimCodePoint) && (delimiters.indexOf(c) >= 0))
++					break;
++				position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c <= maxDelimCodePoint) && isDelimiter(c))
++					break;
++				position += Character.charCount(c);
++			}
++		}
++		if (retDelims && (startPos == position)) {
++			if (!hasSurrogates) {
++				char c = str.charAt(position);
++				if ((c <= maxDelimCodePoint) && (delimiters.indexOf(c) >= 0))
++					position++;
++			} else {
++				int c = str.codePointAt(position);
++				if ((c <= maxDelimCodePoint) && isDelimiter(c))
++					position += Character.charCount(c);
++			}
++		}
++		return position;
++	}
++
++	private boolean isDelimiter(int codePoint) {
++		for (int i = 0; i < delimiterCodePoints.length; i++) {
++			if (delimiterCodePoints[i] == codePoint) {
++				return true;
++			}
++		}
++		return false;
++	}
++
++	public boolean hasMoreTokens() {
++		newPosition = skipDelimiters(currentPosition);
++		return (newPosition < maxPosition);
++	}
++
++	public String nextToken() {
++
++		currentPosition = (newPosition >= 0 && !delimsChanged) ? newPosition
++				: skipDelimiters(currentPosition);
++
++		delimsChanged = false;
++		newPosition = -1;
++		if (currentPosition >= maxPosition)
++			throw new NoSuchElementException();
++		int start = currentPosition;
++		currentPosition = scanToken(currentPosition);
++		return str.substring(start, currentPosition);
++	}
++
++	public String nextToken(String delim) {
++		delimiters = delim;
++
++		delimsChanged = true;
++
++		setMaxDelimCodePoint();
++		return nextToken();
++	}
++
++	public boolean hasMoreElements() {
++		return hasMoreTokens();
++	}
++
++	public Object nextElement() {
++		return nextToken();
++	}
++
++	public int countTokens() {
++		int count = 0;
++		int currpos = currentPosition;
++		while (currpos < maxPosition) {
++			currpos = skipDelimiters(currpos);
++			if (currpos >= maxPosition)
++				break;
++			currpos = scanToken(currpos);
++			count++;
++		}
++		return count;
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/TagGeneratorClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/TagGeneratorClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/TagGeneratorClient.java	(版本 505)
+@@ -0,0 +1,20 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.TagGenerator;
++
++public class TagGeneratorClient {
++	protected TagGenerator tagGenerator = null;
++
++	public TagGeneratorClient() {
++		this.tagGenerator = (TagGenerator) new RmiClient().getBeanFactory()
++				.getBean("TagGeneratorService");
++	}
++
++	public Object tagGenerator(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagGenerator.generatorTag(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/RmiClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/RmiClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/RmiClient.java	(版本 505)
+@@ -0,0 +1,22 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import org.springframework.beans.factory.BeanFactory;
++import org.springframework.beans.factory.xml.XmlBeanFactory;
++import org.springframework.core.io.ClassPathResource;
++import org.springframework.core.io.Resource;
++
++@SuppressWarnings("deprecation")
++public class RmiClient {
++
++	private Resource cresource;
++	private static BeanFactory beanFactory;
++
++	public RmiClient() {
++		cresource = new ClassPathResource("rmiclient.xml");
++		beanFactory = new XmlBeanFactory(cresource);
++	}
++
++	public BeanFactory getBeanFactory() {
++		return beanFactory;
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/TagAppClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/TagAppClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/TagAppClient.java	(版本 505)
+@@ -0,0 +1,30 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.TagApp;
++
++public class TagAppClient {
++	protected TagApp tagApp;
++
++	public TagAppClient() {
++		this.tagApp = (TagApp) new RmiClient().getBeanFactory().getBean(
++				"TagAppService");
++	}
++
++	public Object recentTags(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagApp.recentTags(intp);
++	}
++
++	public Object currentTags(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagApp.currentTags(intp);
++	}
++
++	public Object tagRate(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return tagApp.tagRate(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/GPIOClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/GPIOClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/GPIOClient.java	(版本 505)
+@@ -0,0 +1,34 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.GPIO;
++
++public class GPIOClient {
++	protected GPIO gpio;
++
++	public GPIOClient() {
++		this.gpio = (GPIO) new RmiClient().getBeanFactory().getBean(
++				"GPIOService");
++	}
++
++	public Object flashGPO(String para) throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpio.flashGPO(intp);
++	}
++
++	public Object setGPO(String para) throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpio.setGPO(intp);
++	}
++
++	public Object testGPI(String para) throws NumberFormatException,
++			RemoteException, CannotExecuteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpio.testGPI(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/GPISimulatorClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/GPISimulatorClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/GPISimulatorClient.java	(版本 505)
+@@ -0,0 +1,39 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.GPISimulator;
++
++public class GPISimulatorClient {
++	protected GPISimulator gpiSimulator;
++
++	public GPISimulatorClient() {
++		this.gpiSimulator = (GPISimulator) new RmiClient().getBeanFactory()
++				.getBean("GPISimulatorService");
++	}
++
++	public Object simulatorGPIHigh(String para) throws NumberFormatException,
++			RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPIHigh(intp);
++	}
++
++	public Object simulatorGPILow(String para) throws NumberFormatException,
++			RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPILow(intp);
++	}
++
++	public Object simulatorFlashGPIHigh(String para)
++			throws NumberFormatException, RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPIFlashHigh(intp);
++	}
++
++	public Object simulatorFlashGPILow(String para)
++			throws NumberFormatException, RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return gpiSimulator.simulatorGPIFlashLow(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/SerialClient.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/SerialClient.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiclient/SerialClient.java	(版本 505)
+@@ -0,0 +1,33 @@
++package com.tongtech.edge.tools.rmiclient;
++
++import gnu.io.NoSuchPortException;
++
++import java.rmi.RemoteException;
++
++import com.tongtech.edge.tools.helper.CommandParameter;
++import com.tongtech.edge.tools.rmiserver.Serial;
++
++public class SerialClient {
++	protected Serial serial;
++
++	public SerialClient() {
++		this.serial = (Serial) new RmiClient().getBeanFactory().getBean(
++				"SerialService");
++	}
++
++	public Object listSerial(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return serial.listSerial(intp);
++	}
++
++	public Object connectSerial(String para) throws RemoteException,
++			NoSuchPortException {
++		CommandParameter intp = new CommandParameter(para);
++		return serial.connectSerial(intp);
++	}
++
++	public Object disconnectSerial(String para) throws RemoteException {
++		CommandParameter intp = new CommandParameter(para);
++		return serial.disconnectSerial(intp);
++	}
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/GPISimulator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/GPISimulator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/GPISimulator.java	(版本 505)
+@@ -0,0 +1,20 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface GPISimulator extends Remote {
++	public Object simulatorGPIHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPILow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPIFlashHigh(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++
++	public Object simulatorGPIFlashLow(CommandInterpreter intp)
++			throws RemoteException, NumberFormatException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/Serial.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/Serial.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/Serial.java	(版本 505)
+@@ -0,0 +1,18 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import gnu.io.NoSuchPortException;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface Serial extends Remote {
++	public Object listSerial(CommandInterpreter intp) throws RemoteException;
++
++	public Object connectSerial(CommandInterpreter intp)
++			throws RemoteException, NoSuchPortException;
++
++	public Object disconnectSerial(CommandInterpreter intp)
++			throws RemoteException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/TagGenerator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/TagGenerator.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/TagGenerator.java	(版本 505)
+@@ -0,0 +1,10 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++public interface TagGenerator extends Remote {
++	public Object generatorTag(CommandInterpreter intp) throws RemoteException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/TagApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/TagApp.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/TagApp.java	(版本 505)
+@@ -0,0 +1,17 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++import com.espertech.esper.client.EPStatementException;
++
++public interface TagApp extends Remote {
++	public Object recentTags(CommandInterpreter intp) throws RemoteException;
++
++	public Object currentTags(CommandInterpreter intp) throws RemoteException;
++
++	public Object tagRate(CommandInterpreter intp) throws RemoteException,
++			EPStatementException;
++}
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/GPIO.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/GPIO.java	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/src/main/java/com/tongtech/edge/tools/rmiserver/GPIO.java	(版本 505)
+@@ -0,0 +1,19 @@
++package com.tongtech.edge.tools.rmiserver;
++
++import java.rmi.Remote;
++import java.rmi.RemoteException;
++
++import org.eclipse.osgi.framework.console.CommandInterpreter;
++
++import com.tongtech.edge.sensors.CannotExecuteException;
++
++public interface GPIO extends Remote {
++	public Object testGPI(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++
++	public Object setGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++
++	public Object flashGPO(CommandInterpreter intp) throws RemoteException,
++			NumberFormatException, CannotExecuteException;
++}
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/pom.xml
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/pom.xml	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/pom.xml	(版本 505)
+@@ -0,0 +1,65 @@
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++	<modelVersion>4.0.0</modelVersion>
++	<groupId>com.tongtech.edge.tools.junittest</groupId>
++	<artifactId>com.tongtech.edge.tools.junittest</artifactId>
++	<version>0.0.1-SNAPSHOT</version>
++	<description>com.tongtech.edge.tools.junittest</description>
++	<properties>
++		<EDGEHOME>${basedir}/../../TI-EDGE Server/TI-EDGE-SDK/edge</EDGEHOME>
++	</properties>
++	<dependencies>
++		<dependency>
++			<groupId>com.tongtech.edge.tools</groupId>
++			<artifactId>com.tongtech.edge.tools</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.eclipse</groupId>
++			<artifactId>org.eclipse.osgi</artifactId>
++			<version>3.8.0.v20120529-1548</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-beans</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge</groupId>
++			<artifactId>com.tongtech.edge</artifactId>
++			<version>5.4.0</version>
++			<scope>system</scope>
++			<systemPath>${basedir}\lib\com.tongtech.edge_5.4.0.jar</systemPath>
++		</dependency>
++		<dependency>
++			<groupId>org.rxtx</groupId>
++			<artifactId>rxtx</artifactId>
++			<version>2.1.7</version>
++		</dependency>
++		<dependency>
++			<groupId>com.espertech</groupId>
++			<artifactId>esper</artifactId>
++			<version>4.7.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework</groupId>
++			<artifactId>spring-context</artifactId>
++			<version>3.1.2.RELEASE</version>
++		</dependency>
++		<dependency>
++			<groupId>com.springsource</groupId>
++			<artifactId>com.springsource.org.aopalliance</artifactId>
++			<version>1.0.0</version>
++		</dependency>
++		<dependency>
++			<groupId>com.tongtech.edge.api</groupId>
++			<artifactId>com.tongtech.edge.api</artifactId>
++			<version>1.3.0</version>
++		</dependency>
++		<dependency>
++			<groupId>org.apache.ant</groupId>
++			<artifactId>ant-junit4</artifactId>
++			<version>1.9.1</version>
++		</dependency>
++	</dependencies>
++</project>
+\ 文件没有以空行结尾
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.settings/org.eclipse.jdt.core.prefs
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.settings/org.eclipse.jdt.core.prefs	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.settings/org.eclipse.jdt.core.prefs	(版本 505)
+@@ -0,0 +1,5 @@
++eclipse.preferences.version=1
++org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.5
++org.eclipse.jdt.core.compiler.compliance=1.5
++org.eclipse.jdt.core.compiler.problem.forbiddenReference=warning
++org.eclipse.jdt.core.compiler.source=1.5
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.settings/org.eclipse.m2e.core.prefs
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.settings/org.eclipse.m2e.core.prefs	(版本 0)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.junittest/.settings/org.eclipse.m2e.core.prefs	(版本 505)
+@@ -0,0 +1,4 @@
++activeProfiles=
++eclipse.preferences.version=1
++resolveWorkspaceProjects=true
++version=1
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Activator.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Activator.java	(版本 504)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools.rmiserver/src/com/tongtech/edge/tools/rmiserver/Activator.java	(版本 505)
+@@ -6,28 +6,48 @@
+ import org.osgi.framework.BundleActivator;
+ import org.osgi.framework.BundleContext;
+ import org.osgi.framework.InvalidSyntaxException;
++import org.osgi.framework.ServiceEvent;
++import org.osgi.framework.ServiceListener;
+ import org.osgi.framework.ServiceReference;
+ import org.springframework.context.support.ClassPathXmlApplicationContext;
+ 
+ public class Activator implements BundleActivator {
+ 	private static Collection<ServiceReference<CommandProvider>> serviceReferences = null;
++	private static BundleContext context = null;
++	private int toolsServiceCount = 0;
+ 
+-	private static BundleContext context;
+-
+ 	public static BundleContext getContext() {
+ 		return context;
+ 	}
+ 
+-	/*
+-	 * (non-Javadoc)
+-	 * 
+-	 * @see
+-	 * org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext
+-	 * )
+-	 */
+-	public void start(BundleContext bundleContext) throws Exception {
+-		Activator.context = bundleContext;
+-		setServiceRefrences();
++	public static Collection<ServiceReference<CommandProvider>> getServiceReferences() {
++		return serviceReferences;
++	}
++
++	public void start(final BundleContext bundleContext) throws Exception {
++		bundleContext.addServiceListener(new ServiceListener() {
++			@Override
++			public void serviceChanged(ServiceEvent arg0) {
++				if (arg0.getServiceReference().getBundle().getSymbolicName()
++						.equalsIgnoreCase("com.tongtech.edge.tools")) {
++					toolsServiceCount++;
++				}
++				if (toolsServiceCount == 13) {
++					context = bundleContext;
++					setServiceRefrences();
++					registerRmiService();
++				}
++			}
++		});
++
++	}
++
++	public void stop(BundleContext bundleContext) throws Exception {
++		Activator.context = null;
++		serviceReferences = null;
++	}
++
++	private void registerRmiService() {
+ 		new Thread(new Runnable() {
+ 			@Override
+ 			public void run() {
+@@ -40,16 +60,6 @@
+ 		}).start();
+ 	}
+ 
+-	/*
+-	 * (non-Javadoc)
+-	 * 
+-	 * @see
+-	 * org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+-	 */
+-	public void stop(BundleContext bundleContext) throws Exception {
+-		Activator.context = null;
+-	}
+-
+ 	private void setServiceRefrences() {
+ 		try {
+ 			serviceReferences = Activator.context.getServiceReferences(
+@@ -59,8 +69,4 @@
+ 		}
+ 	}
+ 
+-	public static Collection<ServiceReference<CommandProvider>> getServiceReferences() {
+-		return serviceReferences;
+-	}
+-
+ }
+
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialApp.java	(版本 505)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/SerialApp.java	(版本 506)
+@@ -220,5 +220,4 @@
+ 			}
+ 		}
+ 	}
+-
+ }
+Index: trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorApp.java
+===================================================================
+--- trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorApp.java	(版本 505)
++++ trunk/TI-EDGE Server/com.tongtech.edge.tools/src/com/tongtech/edge/tools/diagnostics/TagGeneratorApp.java	(版本 506)
+@@ -65,7 +65,6 @@
+ 	@Override
+ 	protected void _start() {
+ 		// init tags
+-		System.err.println("starting taggnratorApp...");
+ 		Map<String, byte[]> tagFiles = super.getDataFiles("tags");
+ 		for (String id : tagFiles.keySet()) {
+ 			addTagSet(id, processTagFile(tagFiles.get(id)));
+@@ -78,7 +77,6 @@
+ 			addExposure(id, processExposureFile(exposureFiles.get(id)));
+ 			logger.info("Loaded Exposure properties with ID " + id);
+ 		}
+-
+ 	}
+ 
+ 	/*
+@@ -259,5 +257,4 @@
+ 			throw new IllegalStateException(e.getMessage());
+ 		}
+ 	}
+-
+ }
+

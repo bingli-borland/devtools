@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project name="PEORB" default="all" basedir="..">
+    <target name="rename" depends="init">
+	<mkdir dir="build/rename/ee"/>
+	<java classname="com.sun.corba.se.spi.orbutil.file.WorkspaceRename" fork="true"
+	    dir="${root.dir}">
+	    <classpath>
+		<pathelement location="${releaselib.dir}/orblib.jar"/>
+	    </classpath>
+	    <arg value="-verbose"/>
+	    <arg value="0"/>
+	    <arg value="-dryrun"/>
+	    <arg value="false"/>
+	    <arg value="-source"/>
+	    <arg value="."/>
+	    <arg value="-destination"/>
+	    <arg value="build/rename/ee"/>
+	    <arg value="-version"/>
+	    <arg value="ee"/>
+	</java>
+    </target>
+</project>
+
