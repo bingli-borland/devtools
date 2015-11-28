@@ -66,16 +66,16 @@ public class GetProjectInfo {
     final static Timestamp logstatFromDate = Timestamp.valueOf("2015-3-1 0:0:0");
 
     final static String []usernames = new String[] {
-            /*yanjie, */"chengcca", "liurla", "tangcheng", "duanqj",
-            /*jianghuana, */"chengwba", "sunleia", "tanjiana", "xufm", "yaolia", "zhaojl",
-            /*linjing, */"lanbing", "lanyonga", "zhukanga",
+            /*yanjie, */"chengcca", "liurla", "tangcheng", "duanqj", "huzuxing", "wangshuai",
+            /*jianghuana, */"chengwba", "sunleia", "tanjiana", "xufm", "yaolia", "zhaojl", "yangxi",
+            /*linjing, */"lanbing", "lanyonga", "zhukanga", "zhangliping",
             /*yanyma, */"huangqiana", "yanyma"};
 
     final static String []mailUsernames = new String[] {"liubt", "jianghuan", "jianghuan", "zhangwq",
             "chengcc", "chengwb",
             "huangqian", "lanyong", "liurl",
             "sunlei", "tangcheng", "tanjian", "yanjie", "yanym", "yaoli", "zhaojl",
-            "zhukang", "lanbing", "xufm", "lijun", "duanqj"};
+            "zhukang", "lanbing", "xufm", "lijun", "duanqj", "huzx", "wangshuai", "yangxi", "zhanglp"};
     //BAM1|CEP2|EDGE2|FSC1|JMS20|LLMC2|LLMJ2|Proxy2
     final static String []projects = new String[] {"TONGIMB", "SZIOT", "PDSB"};
     HashMap<String, Peoplestat> users = new HashMap();
