@@ -66,9 +66,9 @@ public class GetProjectInfo {
     final static Timestamp logstatFromDate = Timestamp.valueOf("2015-3-1 0:0:0");
 
     final static String []usernames = new String[] {
-            /*yanjie, */"chengcca", "liurla", "tangcheng", "duanqj", "huzuxing", "wangshuai",
+            /*yanjie, */"chengcca", "liurla", "tangcheng", "duanqj", "huzx", "wangshuai",
             /*jianghuana, */"chengwba", "sunleia", "tanjiana", "xufm", "yaolia", "zhaojl", "yangxi",
-            /*linjing, */"lanbing", "lanyonga", "zhukanga", "zhangliping",
+            /*linjing, */"lanbing", "lanyonga", "zhukanga", "zhanglp",
             /*yanyma, */"huangqiana", "yanyma"};
 
     final static String []mailUsernames = new String[] {"liubt", "jianghuan", "jianghuan", "zhangwq",
